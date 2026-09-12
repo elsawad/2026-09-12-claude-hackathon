@@ -1,6 +1,4 @@
-import { getOfficerPassphrase } from "./session";
-
-export type Tier = "utility_emergency" | "imminent_hazard" | "routine" | "insufficient_info";
+import type { Tier } from "../types";
 
 export interface PublicReport {
   id: string;
@@ -54,11 +52,6 @@ export async function getPublicReports(): Promise<PublicReport[]> {
   return parseOrThrow(res);
 }
 
-export async function getPublicReport(id: string) {
-  const res = await fetch(`/api/reports/public/${id}`);
-  return parseOrThrow(res);
-}
-
 export async function confirmReport(id: string, sessionToken: string) {
   const res = await fetch(`/api/reports/${id}/confirm`, {
     method: "POST",
@@ -70,49 +63,5 @@ export async function confirmReport(id: string, sessionToken: string) {
 
 export async function lookupReport(code: string) {
   const res = await fetch(`/api/reports/lookup/${encodeURIComponent(code)}`);
-  return parseOrThrow(res);
-}
-
-// ---------- Officer ----------
-
-function officerHeaders(): HeadersInit {
-  const pass = getOfficerPassphrase();
-  return pass ? { "x-officer-passphrase": pass } : {};
-}
-
-export async function officerLogin(passphrase: string) {
-  const res = await fetch("/api/officer/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ passphrase })
-  });
-  return parseOrThrow(res);
-}
-
-export async function getOfficerSummary() {
-  const res = await fetch("/api/officer/summary", { headers: officerHeaders() });
-  return parseOrThrow(res);
-}
-
-export async function getOfficerReports(reviewState?: string) {
-  const qs = reviewState ? `?review_state=${encodeURIComponent(reviewState)}` : "";
-  const res = await fetch(`/api/officer/reports${qs}`, { headers: officerHeaders() });
-  return parseOrThrow(res);
-}
-
-export async function getOfficerReportDetail(id: string) {
-  const res = await fetch(`/api/officer/reports/${id}`, { headers: officerHeaders() });
-  return parseOrThrow(res);
-}
-
-export async function reviewReport(
-  id: string,
-  body: { action: string; finalTier?: string; overrideReason?: string; reviewedBy?: string }
-) {
-  const res = await fetch(`/api/officer/reports/${id}/review`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...officerHeaders() },
-    body: JSON.stringify(body)
-  });
   return parseOrThrow(res);
 }

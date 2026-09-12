@@ -2,12 +2,20 @@ import { useEffect, useState } from "react";
 import Console from "./console/Console";
 import "./App.css";
 import LandCheck from "./LandCheck";
+import ResidentHome from "./resident/ResidentHome";
+import LiveMapPage from "./resident/LiveMapPage";
+import LookupPage from "./resident/LookupPage";
+import "./resident/resident.css";
 
 type Health = { ok: boolean; service: string };
-type View = "home" | "land";
+type View = "home" | "land" | "report" | "map" | "lookup";
 
 function pathToView(pathname: string): View {
-  return pathname === "/land" ? "land" : "home";
+  if (pathname === "/land") return "land";
+  if (pathname === "/report") return "report";
+  if (pathname === "/map") return "map";
+  if (pathname === "/lookup") return "lookup";
+  return "home";
 }
 
 function Home() {
@@ -28,12 +36,14 @@ function Home() {
   }, []);
 
   function go(next: View) {
-    const path = next === "land" ? "/land" : "/";
+    const path = next === "home" ? "/" : `/${next}`;
     if (window.location.pathname !== path) {
       window.history.pushState({}, "", path);
     }
     setView(next);
   }
+
+  const isReportFlow = view === "report" || view === "map" || view === "lookup";
 
   return (
     <div className={`page${view === "land" ? " page-land" : " home"}`}>
@@ -44,11 +54,25 @@ function Home() {
         <nav>
           <button
             type="button"
-            className={view === "home" ? "nav-active" : undefined}
-            onClick={() => go("home")}
+            className={isReportFlow ? "nav-active" : undefined}
+            onClick={() => go("report")}
           >
             Report
           </button>
+          {isReportFlow && (
+            <>
+              <button type="button" className={view === "map" ? "nav-active" : undefined} onClick={() => go("map")}>
+                Map
+              </button>
+              <button
+                type="button"
+                className={view === "lookup" ? "nav-active" : undefined}
+                onClick={() => go("lookup")}
+              >
+                Check status
+              </button>
+            </>
+          )}
           <button
             type="button"
             className={view === "land" ? "nav-active" : undefined}
@@ -62,6 +86,12 @@ function Home() {
 
       {view === "land" ? (
         <LandCheck />
+      ) : isReportFlow ? (
+        <div className="resident">
+          {view === "report" && <ResidentHome onViewMap={() => go("map")} />}
+          {view === "map" && <LiveMapPage />}
+          {view === "lookup" && <LookupPage />}
+        </div>
       ) : (
         <main>
           <section className="hero" id="report">
@@ -71,7 +101,7 @@ function Home() {
               work reaches city crews faster.
             </p>
             <div className="actions">
-              <button type="button" disabled>
+              <button type="button" onClick={() => go("report")}>
                 Report a tree
               </button>
               <button

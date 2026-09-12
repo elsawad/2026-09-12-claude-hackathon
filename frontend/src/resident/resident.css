@@ -1,0 +1,234 @@
+.resident {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 3rem;
+}
+
+.resident .screen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.resident .card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 0.6rem;
+  padding: 1.1rem 1.2rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.resident h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
+}
+
+.resident .lede {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.resident .helper-text {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.resident .helper-text.center,
+.resident .center {
+  text-align: center;
+}
+
+.resident .center-note {
+  text-align: center;
+  color: var(--muted);
+  padding: 2rem 0;
+}
+
+.resident .error-text {
+  margin: 0;
+  color: #8b1e1e;
+  font-size: 0.85rem;
+}
+
+.resident .notice {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  background: #f6e0c8;
+  color: #6a3410;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.resident .emergency-banner {
+  padding: 1.1rem;
+  border-radius: 0.6rem;
+  background: #f8d9d3;
+  color: #6b1a10;
+  font-size: 1.05rem;
+  line-height: 1.55;
+}
+
+.resident .field {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.resident label {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.resident input,
+.resident select,
+.resident textarea {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 0.35rem;
+  padding: 0.5rem 0.6rem;
+  font: inherit;
+  color: var(--text-strong);
+  width: 100%;
+}
+
+.resident textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.resident .question-block {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.resident .q {
+  font-size: 0.95rem;
+  color: var(--text-strong);
+}
+
+.resident .btn-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.resident .stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.resident button {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 0.4rem;
+  padding: 0.65rem 1rem;
+  font: inherit;
+  font-size: 0.95rem;
+  background: var(--accent);
+  color: #f7faf5;
+  cursor: pointer;
+}
+
+.resident button.secondary {
+  background: #fff;
+  border-color: var(--border);
+  color: var(--text-strong);
+}
+
+.resident button.danger {
+  background: #8b1e1e;
+}
+
+.resident button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.resident .pill {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: var(--bg-deep);
+  color: var(--text);
+  font-size: 0.8rem;
+}
+
+.resident .tier-badge {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.resident .tier-utility_emergency {
+  background: #a3281c;
+}
+.resident .tier-imminent_hazard {
+  background: #b8590a;
+}
+.resident .tier-routine {
+  background: #1f6f43;
+}
+.resident .tier-insufficient_info {
+  background: #5b564a;
+}
+
+.resident .reference-code {
+  text-align: center;
+  font-family: var(--display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-strong);
+}
+
+.resident .photo-preview {
+  margin-top: 0.5rem;
+  border-radius: 0.5rem;
+  max-height: 200px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.resident .pick-map,
+.resident .live-map {
+  height: 320px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.resident .kv {
+  margin: 0.5rem 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 0.9rem;
+}
+
+.resident .kv dt {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.resident .kv dd {
+  margin: 0;
+}
+
+.confirm-btn {
+  margin-top: 0.4rem;
+  padding: 0.35rem 0.6rem !important;
+  font-size: 0.8rem !important;
+}

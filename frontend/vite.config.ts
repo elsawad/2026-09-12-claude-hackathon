@@ -20,6 +20,15 @@ export default defineConfig({
         target: "http://localhost:3001",
         changeOrigin: true,
       },
+      "/api/geometry-hint": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+      },
+      // Uploaded report photos, served statically by Express
+      "/uploads": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+      },
       // Land-check FastAPI (stats, points, search, work-order, check)
       "/api": {
         target: "http://localhost:8765",

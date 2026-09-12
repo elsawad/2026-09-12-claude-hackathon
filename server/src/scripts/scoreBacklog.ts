@@ -6,9 +6,10 @@ import { getLandStatus, getUtilityProximity } from "../geometry.js";
 import { getEabFlag } from "../eab.js";
 import { getWindContext } from "../wind.js";
 import { scoreReport } from "../scoring.js";
+import { tierFrom } from "../review.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const OUT_FILE = path.join(__dirname, "..", "..", "data", "scored-backlog.json");
+const OUT_FILE = path.join(__dirname, "..", "..", "..", "data", "scored-backlog.json");
 
 const SERVICE_REQUESTS_URL =
   "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/arcgis/rest/services/Cityworks_Service_Requests/FeatureServer/0/query";
@@ -17,7 +18,7 @@ const SAMPLE_SIZE = Number(process.argv[2] ?? 20);
 
 /**
  * Build-plan Step 5: pull real tree-related service requests, run every one
- * through the Step 4 scoring function, commit the scored output as JSON —
+ * through the real scoring function, commit the scored output as JSON —
  * this is both the safe demo fallback if live calls fail, and the evidence
  * that the model works on real inputs, not three cherry-picked examples.
  *
@@ -77,7 +78,8 @@ async function main() {
         photoBase64: null,
         photoMediaType: null
       });
-      console.log(`[${i + 1}/${withCoords.length}] ${attrs.OBJECTID} -> ${scoring.proposed_tier} (${scoring.confidence})`);
+      const tier = tierFrom(scoring.priority, scoring.category);
+      console.log(`[${i + 1}/${withCoords.length}] ${attrs.OBJECTID} -> ${scoring.category}/${scoring.priority} (${tier}, ${scoring.confidence})`);
       results.push({
         sourceObjectId: attrs.OBJECTID,
         dateInitiated: attrs.DATE_INITIATED,
@@ -86,7 +88,7 @@ async function main() {
         rawAttributes: attrs,
         landStatus: landStatus.status,
         utilityProximityM: utilityProximity?.distanceM ?? null,
-        scoring
+        scoring: { ...scoring, tier }
       });
     } catch (err) {
       console.error(`[${i + 1}/${withCoords.length}] ${attrs.OBJECTID} FAILED:`, (err as Error).message);

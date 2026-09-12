@@ -1,5 +1,5 @@
 import * as turf from "@turf/turf";
-import type { Feature, FeatureCollection, Geometry } from "geojson";
+import type { Feature, Geometry } from "geojson";
 import { getLayer } from "./dataLayers.js";
 import type { LandStatus, LandStatusSource } from "./types.js";
 

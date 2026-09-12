@@ -1,5 +1,16 @@
 import { db, generateReferenceCode } from "./db.js";
-import type { Report, AuditLogEntry, LocationSource, LandStatus, LandStatusSource, Tier, ReviewState, ReportStatus } from "./types.js";
+import { tierFrom } from "./review.js";
+import type {
+  AuditEntry,
+  Category,
+  LandStatus,
+  LandStatusSource,
+  Priority,
+  Report,
+  ReportStatus,
+  ReviewState,
+  Tier
+} from "./types.js";
 
 function row(r: any): Report {
   return {
@@ -10,6 +21,11 @@ function row(r: any): Report {
     lat: r.lat,
     lng: r.lng,
     location_source: r.location_source,
+    block_location: r.block_location,
+    district: r.district,
+    category: r.category,
+    priority: r.priority,
+    notes: r.notes,
     description_original: r.description_original,
     description_language: r.description_language,
     description_translated: r.description_translated,
@@ -34,8 +50,19 @@ function row(r: any): Report {
     override_reason: r.override_reason,
     reviewed_by: r.reviewed_by,
     reviewed_at: r.reviewed_at,
-    status: r.status,
-    pre_flagged_urgent: r.pre_flagged_urgent
+    status: r.status
+  };
+}
+
+function auditRow(r: any): AuditEntry {
+  return {
+    id: r.id,
+    report_id: r.report_id,
+    actor: r.actor,
+    action: r.action,
+    before: r.before ? JSON.parse(r.before) : {},
+    after: r.after ? JSON.parse(r.after) : {},
+    timestamp: r.timestamp
   };
 }
 
@@ -43,7 +70,9 @@ export interface NewReportInput {
   photoUrl: string | null;
   lat: number;
   lng: number;
-  locationSource: LocationSource;
+  locationSource: string;
+  blockLocation: string;
+  district: string;
   descriptionOriginal: string | null;
   descriptionLanguage: string | null;
   descriptionTranslated: string | null;
@@ -52,7 +81,8 @@ export interface NewReportInput {
   questionnaireDangerAnswer: string | null;
   landStatus: LandStatus;
   landStatusSource: LandStatusSource;
-  proposedTier: Tier | null;
+  category: Category;
+  priority: Priority;
   reason: string | null;
   confidence: number | null;
   missingDetail: string | null;
@@ -61,30 +91,40 @@ export interface NewReportInput {
   windContext: string | null;
   eabFlag: boolean;
   historicalPatternNote: string | null;
-  preFlaggedUrgent: boolean;
   status: ReportStatus;
+  /** Seed-data only — real submissions always default to now(). */
+  createdAt?: string;
 }
 
 export async function insertReport(input: NewReportInput): Promise<Report> {
   const referenceCode = generateReferenceCode();
+  const proposedTier: Tier = tierFrom(input.priority, input.category);
   const result = await db.query(
     `INSERT INTO reports (
-      reference_code, photo_url, lat, lng, location_source,
+      created_at,
+      reference_code, photo_url, lat, lng, location_source, block_location, district,
+      category, priority, notes,
       description_original, description_language, description_translated, translation_is_ai,
       questionnaire_location_answer, questionnaire_danger_answer,
-      land_status, land_status_source,
-      proposed_tier, reason, confidence, missing_detail,
+      land_status, land_status_source, proposed_tier,
+      reason, confidence, missing_detail,
       utility_proximity_m, utility_feature_type,
       wind_context, eab_flag, historical_pattern_note,
-      pre_flagged_urgent, status
-    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
+      status
+    ) VALUES (COALESCE($1, now()), $2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29)
     RETURNING *`,
     [
+      input.createdAt ?? null,
       referenceCode,
       input.photoUrl,
       input.lat,
       input.lng,
       input.locationSource,
+      input.blockLocation,
+      input.district,
+      input.category,
+      input.priority,
+      "",
       input.descriptionOriginal,
       input.descriptionLanguage,
       input.descriptionTranslated,
@@ -93,7 +133,7 @@ export async function insertReport(input: NewReportInput): Promise<Report> {
       input.questionnaireDangerAnswer,
       input.landStatus,
       input.landStatusSource,
-      input.proposedTier,
+      proposedTier,
       input.reason,
       input.confidence,
       input.missingDetail,
@@ -102,7 +142,6 @@ export async function insertReport(input: NewReportInput): Promise<Report> {
       input.windContext,
       input.eabFlag,
       input.historicalPatternNote,
-      input.preFlaggedUrgent,
       input.status
     ]
   );
@@ -132,7 +171,7 @@ export async function findNearbyReport(lat: number, lng: number, radiusM = 50): 
   // Cheap bounding-box prefilter in SQL, exact haversine check in JS (PGlite has no PostGIS).
   const degLat = radiusM / 111_320;
   const degLng = radiusM / (111_320 * Math.cos((lat * Math.PI) / 180));
-  const result = await db.query(
+  const result = await db.query<any>(
     `SELECT * FROM reports
      WHERE lat BETWEEN $1 AND $2 AND lng BETWEEN $3 AND $4
        AND status NOT IN ('diverted_private', 'resolved', 'stale')
@@ -192,17 +231,21 @@ export async function updateReview(
   return result.rows[0] ? row(result.rows[0]) : null;
 }
 
-export async function insertAuditLog(entry: Omit<AuditLogEntry, "id" | "timestamp">): Promise<void> {
-  await db.query(`INSERT INTO audit_log (report_id, actor, action, before, after) VALUES ($1,$2,$3,$4,$5)`, [
-    entry.report_id,
-    entry.actor,
-    entry.action,
-    entry.before,
-    entry.after
-  ]);
+export async function insertAuditLog(entry: {
+  report_id: string;
+  actor: string;
+  action: string;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+}): Promise<AuditEntry> {
+  const result = await db.query(
+    `INSERT INTO audit_log (report_id, actor, action, before, after) VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+    [entry.report_id, entry.actor, entry.action, entry.before ? JSON.stringify(entry.before) : null, entry.after ? JSON.stringify(entry.after) : null]
+  );
+  return auditRow(result.rows[0]);
 }
 
-export async function getAuditLog(reportId: string): Promise<AuditLogEntry[]> {
+export async function getAuditLog(reportId: string): Promise<AuditEntry[]> {
   const result = await db.query(`SELECT * FROM audit_log WHERE report_id = $1 ORDER BY timestamp ASC`, [reportId]);
-  return result.rows as AuditLogEntry[];
+  return result.rows.map(auditRow);
 }

@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 export type LocationSource = "exif" | "geolocation" | "map_pin" | "typed_address";
 export interface CapturedLocation {
@@ -12,7 +13,7 @@ const HALIFAX_CENTER: [number, number] = [44.6488, -63.5752];
 
 interface Props {
   value: CapturedLocation | null;
-  onChange: (loc: CapturedLocation) => void;
+  onChange: (loc: CapturedLocation | null) => void;
 }
 
 /**
@@ -25,6 +26,29 @@ export default function LocationCapture({ value, onChange }: Props) {
   const [address, setAddress] = useState("");
   const [geocoding, setGeocoding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const mapEl = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+
+  useEffect(() => {
+    if (mode !== "map" || !mapEl.current || mapRef.current) return;
+    const map = L.map(mapEl.current).setView(HALIFAX_CENTER, 13);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+    map.on("click", (e: L.LeafletMouseEvent) => {
+      if (markerRef.current) map.removeLayer(markerRef.current);
+      markerRef.current = L.marker(e.latlng).addTo(map);
+      onChange({ lat: e.latlng.lat, lng: e.latlng.lng, source: "map_pin" });
+    });
+    mapRef.current = map;
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   function useGeolocation() {
     setError(null);
@@ -70,11 +94,10 @@ export default function LocationCapture({ value, onChange }: Props) {
         </div>
         <button
           type="button"
-          className="btn btn-secondary"
-          style={{ marginTop: 8 }}
+          className="secondary"
           onClick={() => {
             setMode("choose");
-            onChange(null as unknown as CapturedLocation);
+            onChange(null);
           }}
         >
           Change location
@@ -87,15 +110,7 @@ export default function LocationCapture({ value, onChange }: Props) {
     return (
       <div className="field">
         <label>Tap the map where the tree is</label>
-        <div className="leaflet-map">
-          <MapContainer center={HALIFAX_CENTER} zoom={13} style={{ height: "100%", width: "100%" }}>
-            <TileLayer
-              attribution='&copy; OpenStreetMap contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <PinPicker onPick={(lat, lng) => onChange({ lat, lng, source: "map_pin" })} />
-          </MapContainer>
-        </div>
+        <div ref={mapEl} className="pick-map" />
       </div>
     );
   }
@@ -110,7 +125,7 @@ export default function LocationCapture({ value, onChange }: Props) {
           onChange={(e) => setAddress(e.target.value)}
           placeholder="e.g. 1234 Spring Garden Rd"
         />
-        <button type="button" className="btn btn-primary" disabled={geocoding} onClick={geocodeAddress}>
+        <button type="button" disabled={geocoding} onClick={geocodeAddress}>
           {geocoding ? "Looking up…" : "Find address"}
         </button>
         {error && <p className="error-text">{error}</p>}
@@ -122,30 +137,19 @@ export default function LocationCapture({ value, onChange }: Props) {
     <div className="field">
       <label>Location</label>
       <div className="stack">
-        <button type="button" className="btn btn-secondary" onClick={useGeolocation}>
-          📍 Use my location
+        <button type="button" className="secondary" onClick={useGeolocation}>
+          Use my location
         </button>
-        <button type="button" className="btn btn-secondary" onClick={() => setMode("map")}>
-          🗺️ Drop a pin on the map
+        <button type="button" className="secondary" onClick={() => setMode("map")}>
+          Drop a pin on the map
         </button>
-        <button type="button" className="btn btn-secondary" onClick={() => setMode("address")}>
-          ⌨️ Type an address
+        <button type="button" className="secondary" onClick={() => setMode("address")}>
+          Type an address
         </button>
       </div>
       {error && <p className="error-text">{error}</p>}
     </div>
   );
-}
-
-function PinPicker({ onPick }: { onPick: (lat: number, lng: number) => void }) {
-  const [marker, setMarker] = useState<[number, number] | null>(null);
-  useMapEvents({
-    click(e) {
-      setMarker([e.latlng.lat, e.latlng.lng]);
-      onPick(e.latlng.lat, e.latlng.lng);
-    }
-  });
-  return marker ? <Marker position={marker} /> : null;
 }
 
 function labelForSource(source: LocationSource): string {

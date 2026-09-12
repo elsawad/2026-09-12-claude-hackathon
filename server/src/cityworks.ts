@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CACHE_DIR = path.join(__dirname, "data", "cache");
+const CACHE_DIR = path.join(__dirname, "..", "data", "cache");
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;

@@ -37,37 +37,31 @@ export default function LookupPage() {
             onKeyDown={(e) => e.key === "Enter" && handleLookup()}
           />
         </div>
-        <button type="button" className="btn btn-primary" disabled={loading} onClick={handleLookup}>
+        <button type="button" disabled={loading} onClick={handleLookup}>
           {loading ? "Looking up…" : "Check status"}
         </button>
 
-        {error && <p className="error-text" style={{ marginTop: 12 }}>{error}</p>}
+        {error && <p className="error-text">{error}</p>}
 
         {result && (
-          <table className="kv-table" style={{ marginTop: 16 }}>
-            <tbody>
-              <tr>
-                <td>Reference code</td>
-                <td>{result.referenceCode}</td>
-              </tr>
-              <tr>
-                <td>Tier</td>
-                <td>{result.tier ? <span className={`tier-badge tier-${result.tier}`}>{result.tier.replace(/_/g, " ")}</span> : "not yet scored"}</td>
-              </tr>
-              <tr>
-                <td>Reviewed by a human?</td>
-                <td>{result.reviewState === "awaiting_review" ? "Not yet" : result.reviewState.replace(/_/g, " ")}</td>
-              </tr>
-              <tr>
-                <td>Status</td>
-                <td>{result.status.replace(/_/g, " ")}</td>
-              </tr>
-              <tr>
-                <td>Submitted</td>
-                <td>{new Date(result.createdAt).toLocaleString()}</td>
-              </tr>
-            </tbody>
-          </table>
+          <dl className="kv">
+            <dt>Reference code</dt>
+            <dd>{result.referenceCode}</dd>
+            <dt>Tier</dt>
+            <dd>
+              {result.tier ? (
+                <span className={`tier-badge tier-${result.tier}`}>{result.tier.replace(/_/g, " ")}</span>
+              ) : (
+                "not yet scored"
+              )}
+            </dd>
+            <dt>Reviewed by a human?</dt>
+            <dd>{result.reviewState === "awaiting_review" ? "Not yet" : result.reviewState.replace(/_/g, " ")}</dd>
+            <dt>Status</dt>
+            <dd>{result.status.replace(/_/g, " ")}</dd>
+            <dt>Submitted</dt>
+            <dd>{new Date(result.createdAt).toLocaleString()}</dd>
+          </dl>
         )}
       </div>
     </div>

@@ -4,7 +4,9 @@ import { fileURLToPath } from "node:url";
 import type { FeatureCollection } from "geojson";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CACHE_DIR = path.join(__dirname, "data", "cache");
+// Lives at server/data/cache, one level up from src/ — matches server/data/
+// already being gitignored, and reuses whatever's already been fetched.
+const CACHE_DIR = path.join(__dirname, "..", "data", "cache");
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // re-fetch at most once a day

@@ -4,15 +4,18 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-fs.mkdirSync(path.join(__dirname, "data"), { recursive: true });
+// Lives at server/data/canopy-watch, one level up from src/ — matches
+// server/data/ already being gitignored.
+const DATA_DIR = path.join(__dirname, "..", "data");
+fs.mkdirSync(DATA_DIR, { recursive: true });
 
 // Embedded, single-process Postgres. No Docker, no external project to
 // provision mid-hackathon — the data directory just lives on disk here.
 // PGlite corrupts if two processes open the same data dir at once, so only
-// the API server (server/index.ts) or a one-off script should hold it open
-// at a time; never run `npm run dev:server` and a script against the same
-// data dir simultaneously.
-export const db = new PGlite(path.join(__dirname, "data", "canopy-watch"));
+// the API server (src/index.ts) or a one-off script should hold it open at
+// a time; never run `npm run dev` and a script against the same data dir
+// simultaneously.
+export const db = new PGlite(path.join(DATA_DIR, "canopy-watch"));
 
 export async function migrate() {
   await db.exec(`
@@ -26,6 +29,12 @@ export async function migrate() {
       lng DOUBLE PRECISION NOT NULL,
       location_source TEXT NOT NULL,
 
+      block_location TEXT NOT NULL DEFAULT 'Location pending',
+      district TEXT NOT NULL DEFAULT 'unknown',
+      category TEXT NOT NULL DEFAULT 'other',
+      priority TEXT NOT NULL DEFAULT 'medium',
+      notes TEXT NOT NULL DEFAULT '',
+
       description_original TEXT,
       description_language TEXT,
       description_translated TEXT,
@@ -37,7 +46,7 @@ export async function migrate() {
       land_status TEXT NOT NULL,
       land_status_source TEXT NOT NULL,
 
-      proposed_tier TEXT,
+      proposed_tier TEXT NOT NULL DEFAULT 'routine',
       reason TEXT,
       confidence DOUBLE PRECISION,
       missing_detail TEXT,
@@ -65,7 +74,7 @@ export async function migrate() {
 
     CREATE TABLE IF NOT EXISTS audit_log (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      report_id UUID NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
+      report_id TEXT NOT NULL,
       actor TEXT NOT NULL,
       action TEXT NOT NULL,
       before TEXT,
@@ -83,6 +92,19 @@ export async function migrate() {
 
     CREATE INDEX IF NOT EXISTS reports_review_state_idx ON reports (review_state);
     CREATE INDEX IF NOT EXISTS reports_status_idx ON reports (status);
+  `);
+
+  // Additive, idempotent upgrade path for a data dir created by an earlier
+  // schema version (this table predates the category/priority/block_location
+  // /district/notes columns) — cheaper than a migration framework for a
+  // hackathon-scale project, and safe to run every boot.
+  await db.exec(`
+    ALTER TABLE reports ADD COLUMN IF NOT EXISTS block_location TEXT NOT NULL DEFAULT 'Location pending';
+    ALTER TABLE reports ADD COLUMN IF NOT EXISTS district TEXT NOT NULL DEFAULT 'unknown';
+    ALTER TABLE reports ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'other';
+    ALTER TABLE reports ADD COLUMN IF NOT EXISTS priority TEXT NOT NULL DEFAULT 'medium';
+    ALTER TABLE reports ADD COLUMN IF NOT EXISTS notes TEXT NOT NULL DEFAULT '';
+    ALTER TABLE reports ADD COLUMN IF NOT EXISTS proposed_tier TEXT NOT NULL DEFAULT 'routine';
   `);
 }
 

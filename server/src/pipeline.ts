@@ -11,7 +11,7 @@ import { getHistoricalPatternNote } from "./cityworks.js";
 import { detectAndTranslate, respondInLanguage } from "./translate.js";
 import { scoreReport } from "./scoring.js";
 import { insertReport, findNearbyReport, insertAuditLog, type NewReportInput } from "./reportsRepo.js";
-import type { LocationSource, Report } from "./types.js";
+import type { Report } from "./types.js";
 
 export interface SubmitReportInput {
   photoUrl: string | null;
@@ -19,7 +19,7 @@ export interface SubmitReportInput {
   photoMediaType: string | null;
   lat: number;
   lng: number;
-  locationSource: LocationSource;
+  locationSource: string;
   descriptionOriginal: string | null;
   questionnaireLocationAnswer: QuestionnaireLocationAnswer | null;
   questionnaireDangerAnswer: string | null;
@@ -38,6 +38,17 @@ const PRIVATE_PROPERTY_MESSAGE =
   "property is dangerous, a licensed arborist can assess and remove it — HRM's 311 line can " +
   "point you to general guidance, but this specific report won't enter the city's work queue.";
 
+/**
+ * No HRM open-data layer gives us a district number or a human "near X"
+ * label (see PRD 5.1 — nothing named "HRM Districts" is in scope), so the
+ * best free approximation is the street/park name the geometry check
+ * already resolved. District is left "unknown" rather than fabricated —
+ * the console already renders that as "Area unknown".
+ */
+function blockLocationFrom(detail: string | null, lat: number, lng: number): string {
+  return detail ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+}
+
 export async function submitReport(input: SubmitReportInput): Promise<SubmitReportResult> {
   // Step 1: geofence
   if (!(await isInsideHRM(input.lat, input.lng))) {
@@ -47,6 +58,7 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
   // Step 2 + human questionnaire reconciliation
   const geometryLandStatus = await getLandStatus(input.lat, input.lng);
   const resolved = resolveLandStatus(geometryLandStatus, input.questionnaireLocationAnswer);
+  const blockLocation = blockLocationFrom(geometryLandStatus.detail, input.lat, input.lng);
 
   // Step 3
   const utilityProximity = await getUtilityProximity(input.lat, input.lng);
@@ -83,6 +95,8 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
       lat: input.lat,
       lng: input.lng,
       locationSource: input.locationSource,
+      blockLocation,
+      district: "unknown",
       descriptionOriginal: input.descriptionOriginal,
       descriptionLanguage,
       descriptionTranslated,
@@ -91,8 +105,9 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
       questionnaireDangerAnswer: input.questionnaireDangerAnswer,
       landStatus: resolved.status,
       landStatusSource: resolved.source,
-      proposedTier: null,
-      reason: null,
+      category: "other",
+      priority: "low",
+      reason: "Private property, both geometry and resident agree — not a city work item.",
       confidence: null,
       missingDetail: null,
       utilityProximityM: utilityProximity?.distanceM ?? null,
@@ -100,7 +115,6 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
       windContext,
       eabFlag,
       historicalPatternNote,
-      preFlaggedUrgent: input.preFlaggedUrgent,
       status: "diverted_private"
     };
     const report = await insertReport(baseInput);
@@ -109,7 +123,7 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
       actor: "model",
       action: "diverted_private",
       before: null,
-      after: "land_status=private (both_agree) — diverted before entering work queue"
+      after: { land_status: "private", land_status_source: "both_agree", note: "diverted before entering work queue" }
     });
     const message =
       descriptionLanguage && descriptionLanguage.toLowerCase() !== "english"
@@ -142,14 +156,23 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
     };
   }
 
+  // Utility proximity is a hard, measured signal — it overrides the model's
+  // own category/priority judgement the same way Track A's tier override
+  // did, rather than just being one more thing Claude weighs.
   const utilityIsEmergency = utilityProximity?.isEmergency ?? false;
-  const finalTier = utilityIsEmergency ? "utility_emergency" : scoring.proposed_tier;
+  const category = utilityIsEmergency ? "utility" : scoring.category;
+  const priority = utilityIsEmergency ? "high" : scoring.priority;
+  const reason = utilityIsEmergency
+    ? `Within ${Math.round(utilityProximity!.distanceM)}m of a ${utilityProximity!.featureType} — routed as a utility emergency regardless of the model's tree-only assessment.`
+    : scoring.reason;
 
   const report = await insertReport({
     photoUrl: input.photoUrl,
     lat: input.lat,
     lng: input.lng,
     locationSource: input.locationSource,
+    blockLocation,
+    district: "unknown",
     descriptionOriginal: input.descriptionOriginal,
     descriptionLanguage,
     descriptionTranslated,
@@ -158,10 +181,9 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
     questionnaireDangerAnswer: input.questionnaireDangerAnswer,
     landStatus: resolved.status,
     landStatusSource: resolved.source,
-    proposedTier: finalTier,
-    reason: utilityIsEmergency
-      ? `Within ${Math.round(utilityProximity!.distanceM)}m of a ${utilityProximity!.featureType} — routed as a utility emergency regardless of the model's tree-only assessment.`
-      : scoring.reason,
+    category,
+    priority,
+    reason,
     confidence: scoring.confidence,
     missingDetail: scoring.missing_detail,
     utilityProximityM: utilityProximity?.distanceM ?? null,
@@ -169,7 +191,6 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
     windContext,
     eabFlag,
     historicalPatternNote,
-    preFlaggedUrgent: input.preFlaggedUrgent,
     status: "new"
   });
 
@@ -178,7 +199,7 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
     actor: "model",
     action: "scored",
     before: null,
-    after: JSON.stringify({ ...scoring, final_tier: finalTier, utility_override: utilityIsEmergency })
+    after: { ...scoring, category, priority, proposed_tier: report.proposed_tier, utility_override: utilityIsEmergency }
   });
 
   return {

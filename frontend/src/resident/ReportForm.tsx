@@ -97,13 +97,7 @@ export default function ReportForm({ preFlaggedUrgent, onDone }: Props) {
             capture="environment"
             onChange={(e) => onPhotoChange(e.target.files?.[0] ?? null)}
           />
-          {photoPreview && (
-            <img
-              src={photoPreview}
-              alt="Selected tree hazard"
-              style={{ marginTop: 8, borderRadius: 10, maxHeight: 200, objectFit: "cover" }}
-            />
-          )}
+          {photoPreview && <img src={photoPreview} alt="Selected tree hazard" className="photo-preview" />}
         </div>
 
         <LocationCapture value={location} onChange={setLocation} />
@@ -144,12 +138,10 @@ export default function ReportForm({ preFlaggedUrgent, onDone }: Props) {
 
         {error && <p className="error-text">{error}</p>}
 
-        <button type="button" className="btn btn-primary" disabled={!canSubmit} onClick={handleSubmit}>
+        <button type="button" disabled={!canSubmit} onClick={handleSubmit}>
           {submitting ? "Submitting…" : "Submit report"}
         </button>
-        <p className="helper-text" style={{ marginTop: 10, textAlign: "center" }}>
-          This report is anonymous. We don't collect your name or contact info.
-        </p>
+        <p className="helper-text center">This report is anonymous. We don't collect your name or contact info.</p>
       </div>
     </div>
   );

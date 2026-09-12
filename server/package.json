@@ -8,15 +8,24 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "check": "tsx src/review.check.ts"
+    "check": "tsx src/review.check.ts",
+    "seed": "tsx src/seed.ts",
+    "score-backlog": "tsx src/scripts/scoreBacklog.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@electric-sql/pglite": "^0.2.15",
+    "@turf/turf": "^7.1.0",
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "dotenv": "^16.4.5",
+    "express": "^5.2.1",
+    "multer": "^2.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/geojson": "^7946.0.14",
+    "@types/multer": "^1.4.12",
     "@types/node": "^22.20.2",
     "tsx": "^4.23.13",
     "typescript": "^5.9.2"

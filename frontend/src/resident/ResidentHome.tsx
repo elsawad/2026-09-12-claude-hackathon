@@ -5,7 +5,7 @@ import Confirmation from "./Confirmation";
 
 type Step = "triage" | "form" | "done";
 
-export default function ResidentHome() {
+export default function ResidentHome({ onViewMap }: { onViewMap: () => void }) {
   const [step, setStep] = useState<Step>("triage");
   const [preFlaggedUrgent, setPreFlaggedUrgent] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -36,6 +36,7 @@ export default function ResidentHome() {
   return (
     <Confirmation
       result={result}
+      onViewMap={onViewMap}
       onNewReport={() => {
         setResult(null);
         setStep("triage");

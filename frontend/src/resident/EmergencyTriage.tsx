@@ -52,12 +52,7 @@ export default function EmergencyTriage({ onContinue }: Props) {
         onChange={setAlreadyFallen}
       />
 
-      <button
-        type="button"
-        className="btn btn-primary"
-        disabled={!ready}
-        onClick={() => onContinue(Boolean(blocking || alreadyFallen))}
-      >
+      <button type="button" disabled={!ready} onClick={() => onContinue(Boolean(blocking || alreadyFallen))}>
         Continue
       </button>
     </div>
@@ -77,18 +72,10 @@ function YesNo({
     <div className="question-block">
       <div className="q">{question}</div>
       <div className="btn-row">
-        <button
-          type="button"
-          className={value === true ? "btn btn-danger" : "btn btn-secondary"}
-          onClick={() => onChange(true)}
-        >
+        <button type="button" className={value === true ? "danger" : "secondary"} onClick={() => onChange(true)}>
           Yes
         </button>
-        <button
-          type="button"
-          className={value === false ? "btn btn-primary" : "btn btn-secondary"}
-          onClick={() => onChange(false)}
-        >
+        <button type="button" className={value === false ? undefined : "secondary"} onClick={() => onChange(false)}>
           No
         </button>
       </div>

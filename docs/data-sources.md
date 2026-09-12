@@ -2,8 +2,8 @@
 
 The dataset landing pages (data-hrm.hub.arcgis.com, data.novascotia.ca) describe intent, not
 field names or even which platform serves them. This is what we actually confirmed by querying
-the live services directly, so the reasoning behind `server/dataLayers.ts` and
-`server/cityworks.ts` is on the record.
+the live services directly, so the reasoning behind `server/src/dataLayers.ts` and
+`server/src/cityworks.ts` is on the record.
 
 ## NS Topographic Database — Utilities
 
@@ -32,11 +32,11 @@ by `DESCRIPTION='Trees'` (the broader `REQUEST_CATEGORY` field only has buckets 
 `DATE_INITIATED` for the Trees subset is 2026-09-04 (min 2017-07-28). This is a live-ish
 periodic ArcGIS extract, not a frozen Dec-2024 snapshot. We still don't have live write-back or
 HRM's internal current-queue API, so true real-time duplicate detection against work HRM is
-doing *right now* is still out of reach — but historical-pattern lookback (`server/cityworks.ts
+doing *right now* is still out of reach — but historical-pattern lookback (`server/src/cityworks.ts
 getHistoricalPatternNote`) is checking against genuinely recent data, not two-year-old data.
 
 477,343 rows total / 34,860 in the Trees subset — we cache only the most recent 6,000 (see
-`MAX_RECORDS` in `server/cityworks.ts`), which easily covers "has this address generated
+`MAX_RECORDS` in `server/src/cityworks.ts`), which easily covers "has this address generated
 complaints before."
 
 ## Cityworks Work Orders
@@ -44,7 +44,7 @@ complaints before."
 `services2.arcgis.com/11XBiaBYA9Ep0yNJ/arcgis/rest/services/Cityworks_Work_Orders/FeatureServer/0`
 
 Also a Table. Location fields are `X_COORDINATE`/`Y_COORDINATE` in **Web Mercator (EPSG:3857)**,
-not lat/long — `server/cityworks.ts` reprojects these manually (no proj4 dependency needed for
+not lat/long — `server/src/cityworks.ts` reprojects these manually (no proj4 dependency needed for
 a single well-known projection pair). Tree work orders: `ASSET_TYPE='AST_TREE'` (40,850 of
 118,912 total). `DESCRIPTION` gives the sub-type ("Tree - Removal", "Tree - Pruning and
 Trimming", "Tree - Stump Removal", etc). Status: `STATUS`. Date: `DATE_INITIATED`.
@@ -75,12 +75,12 @@ product's purpose (is this tree HRM's to look at) that distinction doesn't chang
 ## Decisions written down (build-plan Step 3)
 
 - **Street ROW buffer:** 10m either side of the centreline (`STREET_ROW_BUFFER_M` in
-  `server/geometry.ts`).
+  `server/src/geometry.ts`).
 - **Utility emergency buffer:** 30m (`UTILITY_EMERGENCY_BUFFER_M`). Erring wide deliberately —
   a false positive costs an officer ten seconds to downgrade; a false negative could mean a
   downed line goes unflagged.
 - **Historical pattern radius:** 75m (`getHistoricalPatternNote` default).
 - **Nearby-duplicate (our own reports) radius:** 50m, per PRD §8 layer 6.
-- **EAB flag:** simplified to "inside HRM ⇒ flagged" (see `server/eab.ts`) — CFIA's actual 2018
+- **EAB flag:** simplified to "inside HRM ⇒ flagged" (see `server/src/eab.ts`) — CFIA's actual 2018
   regulated-area boundary wasn't findable as a clean, current GIS layer in the time available;
   named as a simplification rather than silently assumed.
