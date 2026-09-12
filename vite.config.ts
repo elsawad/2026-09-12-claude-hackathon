@@ -12,8 +12,8 @@ export default defineConfig({
         name: "Canopy Watch",
         short_name: "CanopyWatch",
         description: "Report a hazardous tree in Halifax in under 30 seconds.",
-        theme_color: "#1f6f43",
-        background_color: "#f5f1e8",
+        theme_color: "#002b49",
+        background_color: "#f4f6f8",
         display: "standalone",
         start_url: "/",
         icons: [

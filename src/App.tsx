@@ -12,8 +12,10 @@ export default function App() {
         path="/*"
         element={
           <div className="app-shell">
+            <div className="brand-ribbon">HALIFAX REGIONAL MUNICIPALITY — COMMUNITY PILOT PROJECT</div>
             <div className="top-bar">
-              <span aria-hidden>🌳</span>
+              <span className="wordmark">Halifax</span>
+              <span className="divider" aria-hidden />
               <h1>Canopy Watch</h1>
             </div>
             <Routes>

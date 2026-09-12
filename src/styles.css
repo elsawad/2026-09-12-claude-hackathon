@@ -1,23 +1,34 @@
+/*
+ * Palette matches halifax.ca's real design tokens (pulled from a live
+ * Sept 2026 snapshot — see docs/data-sources.md): navy header #002B49,
+ * link/accent blue #00558C, sage-olive ribbon accent #767A5C, body ink
+ * #4A4A4A. Their body typeface, "Alright Sans", is a paid/licensed font —
+ * Public Sans (free, designed for government use, similar geometric
+ * humanist feel) stands in for it rather than embedding a font we don't
+ * hold a licence for. One family for everything is intentional, matching
+ * the source site, which does the same.
+ */
 :root {
-  --color-bg: #f5f1e8;
+  --color-bg: #f4f6f8;
   --color-surface: #ffffff;
-  --color-ink: #1c2b22;
-  --color-ink-muted: #52604f;
-  --color-border: #ded6c3;
-  --color-primary: #1f6f43;
-  --color-primary-dark: #143f27;
+  --color-ink: #29292a;
+  --color-ink-muted: #4a4a4a;
+  --color-border: #d7dbe0;
+  --color-primary: #00558c;
+  --color-primary-dark: #002b49;
   --color-primary-contrast: #ffffff;
+  --color-accent: #767a5c;
   --color-danger: #a3281c;
   --color-danger-bg: #fbe9e7;
 
   --tier-utility-emergency: #a3281c;
   --tier-imminent-hazard: #b8590a;
-  --tier-routine: #1f6f43;
-  --tier-insufficient-info: #5b564a;
+  --tier-routine: #3f6b3f;
+  --tier-insufficient-info: #5b5f52;
 
-  --radius: 14px;
-  --shadow: 0 2px 10px rgba(28, 43, 34, 0.08);
-  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --radius: 6px;
+  --shadow: 0 2px 10px rgba(0, 43, 73, 0.1);
+  font-family: "Public Sans", "Segoe UI", Arial, system-ui, sans-serif;
 }
 
 * {
@@ -58,19 +69,46 @@ a {
   max-width: 960px;
 }
 
+.brand-ribbon {
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+  padding: 5px 12px;
+}
+
 .top-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   padding: 14px 16px;
-  background: var(--color-primary);
+  background: var(--color-primary-dark);
   color: var(--color-primary-contrast);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 92%);
+}
+
+.top-bar .wordmark {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.top-bar .divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .top-bar h1 {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   margin: 0;
-  font-weight: 700;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .screen {
