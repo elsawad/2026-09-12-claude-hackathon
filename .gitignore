@@ -1,14 +1,21 @@
 node_modules/
 dist/
+dist-ssr/
 build/
 .DS_Store
 *.log
 .env
 .env.*
 !.env.example
+.env.local
 coverage/
 .vite/
 *.tsbuildinfo
 .venv/
 __pycache__/
 *.pyc
+*.local
+
+# Root-level app (Vite+React+Express+PGlite) — local dev state, never committed.
+server/data/
+server/uploads/
