@@ -137,12 +137,35 @@ A submission goes through `categorizeReport()` (`server/src/categorization.ts`),
    backing that call. If the tool output fails validation (e.g. `immediate_threat: true` with no
    supporting signals), the model gets one retry with the validation error attached before the
    submission is surfaced to the resident as `AI_UNAVAILABLE`.
-4. **A pure function derives HRM's actual priority rule**, not Claude: `priorityFor()`
+4. **A pure function derives priority**, not Claude: `priorityFor()`
    (`server/src/categorization.ts`) only allows Priority 1 for the four categories that are ever
-   urgent (chipping/brush, pruning, stump, removal) *and* only when `immediate_threat` is true —
-   tree assessment/replacement/miscellaneous are always Priority 2, no matter what Claude reports.
-   Priority 1 maps to tier `imminent_hazard`, Priority 2 to `routine`. A live utility-proximity hit
-   still overrides everything to `utility_emergency`, same as before.
+   urgent (chipping/brush, pruning, stump, removal) — tree assessment/replacement/miscellaneous are
+   always Priority 2, no matter what Claude reports. Within those four categories, Priority 1 is
+   assigned when `immediate_threat` is true **or** when the report sits in a high-density area (see
+   below). Priority 1 maps to tier `imminent_hazard`, Priority 2 to `routine`. A live
+   utility-proximity hit still overrides everything to `utility_emergency`.
+
+### Population-density escalation (a deliberate departure from HRM's rule)
+
+HRM's published standard sets priority on hazard alone. This app additionally escalates on
+**exposure**: a report at or above the **90th percentile** of Census 2021 dissemination-area
+population density is treated as Priority 1 even with no visible immediate threat, on the theory
+that the same limb failure puts far more people at risk downtown than on a rural boulevard.
+
+**This means the app assigns a 24-hour standard to some work HRM's own policy calls routine
+(up to 12 months).** That is a real divergence and it is surfaced rather than hidden:
+
+- `priority_basis` on every categorization is either `hrm_standard` or `density_escalated`.
+- The officer-facing `reason` on an escalated report spells it out, ending with "HRM's published
+  standard would call this Priority 2."
+- The full categorization (including the density percentile and population) is written to the
+  audit log, so any tier can be reconstructed after the fact.
+
+The threshold is one constant — `HIGH_DENSITY_PERCENTILE` in `server/src/categorization.ts`. At
+the current 90th percentile it covers 61 of HRM's 610 dissemination areas (~43,100 residents,
+9.8% of the population, ≥6,553 residents/km²) — in practice the downtown peninsula and a few
+Dartmouth/Bedford cores. Density never relaxes the category gate: an assessment or a replacement
+is not 24-hour work no matter how dense the block is.
 
 The officer console still runs on the older category (`utility`/`fallen`/`hanging_limb`/...) +
 priority (`high`/`medium`/`low`) vocabulary from before this change — `legacyCategory()` in
@@ -166,6 +189,11 @@ flow, the Land check tool.
 - Cityworks write-back — nothing is dispatched to HRM's real system.
 
 **Known limitations, stated rather than hidden:**
+- **Tier is no longer purely HRM's published rule.** Population-density escalation (see above) can
+  put a report on the 24-hour standard that HRM policy would give up to 12 months. This is a
+  product decision about exposure, not a reading of HRM's policy, and any demo or deployment
+  should say so out loud — `priority_basis: "density_escalated"` marks exactly which reports it
+  affected.
 - **The private-property diversion from PRD §6.2 — described there as "the single highest-value
   feature for residents" — isn't in the current pipeline.** A report on land that isn't HRM-owned
   now gets a flat `not_hrm_owned` rejection (a 422 with the raw land-check result) rather than the

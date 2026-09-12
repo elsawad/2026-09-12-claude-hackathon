@@ -72,6 +72,17 @@ enclaves geographically inside HRM's outline but legally separate (Cole Harbour 
 17, Sheet Harbour 36, Wallace Hills 14A) — not excluded from the geofence, since for this
 product's purpose (is this tree HRM's to look at) that distinction doesn't change the answer.
 
+## Census 2021 Dissemination Areas
+
+Local file: `Census_2021_Dissemination_Areas_-5724810768993162933.geojson` (7MB, 610 polygons
+covering HRM, 440,072 residents total — matches HRM's published population). Loaded by
+`server/src/localContext.ts: getPopulationImpact()`.
+
+Fields used: `DAUID` (area id), `DAPOP2021` (population), `DAPOPDEN` (residents/km²), plus
+`DAAREA`. Density is heavily right-skewed — min 0, median ~2,188/km², 75th ~3,862, 90th ~6,553,
+max ~83,250 — so everything downstream works off a **percentile**, computed against all 610
+areas, rather than a raw density value.
+
 ## Decisions written down (build-plan Step 3)
 
 - **Street ROW buffer:** 10m either side of the centreline (`STREET_ROW_BUFFER_M` in
@@ -81,6 +92,13 @@ product's purpose (is this tree HRM's to look at) that distinction doesn't chang
   downed line goes unflagged.
 - **Historical pattern radius:** 75m (`getHistoricalPatternNote` default).
 - **Nearby-duplicate (our own reports) radius:** 50m, per PRD §8 layer 6.
+- **Density escalation threshold:** 90th percentile of dissemination-area population density
+  (`HIGH_DENSITY_PERCENTILE` in `server/src/categorization.ts`). Covers 61 of 610 areas —
+  ~43,100 residents, 9.8% of HRM, ≥6,553/km². Chosen to catch the downtown cores without
+  sweeping in ordinary urban residential blocks: at the 75th percentile it would cover 153 areas
+  and 24% of the population. **This rule departs from HRM's published service standards**, which
+  set priority on hazard alone — reports it affects are marked `priority_basis:
+  "density_escalated"` and say so in the officer-facing reason.
 - **EAB flag:** simplified to "inside HRM ⇒ flagged" (see `server/src/eab.ts`) — CFIA's actual 2018
   regulated-area boundary wasn't findable as a clean, current GIS layer in the time available;
   named as a simplification rather than silently assumed.

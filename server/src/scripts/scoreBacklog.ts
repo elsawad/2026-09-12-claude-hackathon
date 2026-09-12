@@ -6,7 +6,8 @@ import { getLandStatus, getUtilityProximity } from "../geometry.js";
 import { getEabFlag } from "../eab.js";
 import { getWindContext } from "../wind.js";
 import { scoreReport } from "../scoring.js";
-import { priorityFor } from "../categorization.js";
+import { isDensityEscalated, priorityFor } from "../categorization.js";
+import { getPopulationImpact } from "../localContext.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_FILE = path.join(__dirname, "..", "..", "..", "data", "scored-backlog.json");
@@ -63,6 +64,9 @@ async function main() {
         getEabFlag(lat, lng)
       ]);
       const description = attributesToDescription(attrs);
+      // Same density input the live pipeline uses — otherwise the committed
+      // backlog would show a different prioritization than a live submission.
+      const populationImpact = getPopulationImpact(lat, lng);
       const scoring = await scoreReport({
         description: description || null,
         descriptionLanguage: "English",
@@ -74,16 +78,19 @@ async function main() {
         windContext,
         eabFlag,
         historicalPatternNote: null,
-        populationImpact: null,
+        populationImpact,
         nearbyRequests: [],
         preFlaggedUrgent: false,
         photoBase64: null,
         photoMediaType: null
       });
-      const priority = priorityFor(scoring.work_category, scoring.immediate_threat);
+      const densityPercentile = populationImpact?.density_percentile ?? null;
+      const priority = priorityFor(scoring.work_category, scoring.immediate_threat, densityPercentile);
+      const escalated = isDensityEscalated(scoring.work_category, scoring.immediate_threat, densityPercentile);
       const tier = priority === 1 ? "imminent_hazard" : "routine";
       console.log(
-        `[${i + 1}/${withCoords.length}] ${attrs.OBJECTID} -> ${scoring.work_category}, priority=${priority} (${scoring.confidence})`
+        `[${i + 1}/${withCoords.length}] ${attrs.OBJECTID} -> ${scoring.work_category}, priority=${priority}` +
+          `${escalated ? " (density-escalated)" : ""} (${scoring.confidence})`
       );
       results.push({
         sourceObjectId: attrs.OBJECTID,
@@ -93,7 +100,13 @@ async function main() {
         rawAttributes: attrs,
         landStatus: landStatus.status,
         utilityProximityM: utilityProximity?.distanceM ?? null,
-        scoring: { ...scoring, priority, tier }
+        populationImpact,
+        scoring: {
+          ...scoring,
+          priority,
+          priority_basis: escalated ? "density_escalated" : "hrm_standard",
+          tier
+        }
       });
     } catch (err) {
       console.error(`[${i + 1}/${withCoords.length}] ${attrs.OBJECTID} FAILED:`, (err as Error).message);

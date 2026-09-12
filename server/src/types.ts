@@ -128,10 +128,21 @@ export type ScoringOutput = {
   photo_shows_tree_hazard: boolean;
 };
 
+/**
+ * "hrm_standard" — priority came from HRM's published rule alone (work
+ * category + a visible immediate threat).
+ * "density_escalated" — HRM's rule said Priority 2, but the report sits in a
+ * top-decile-density dissemination area and was promoted to Priority 1 on
+ * exposure. This is deliberately NOT what HRM's policy says; it's recorded
+ * per report so an officer can see which standard produced the tier.
+ */
+export type PriorityBasis = "hrm_standard" | "density_escalated";
+
 export type CategorizationAccepted = {
   status: "accepted";
   work_category: WorkCategory;
   priority: HrmPriority;
+  priority_basis: PriorityBasis;
   tier: "imminent_hazard" | "routine";
   nearby_requests: NearbyRequest[];
   population_impact: PopulationImpact | null;
