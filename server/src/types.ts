@@ -64,6 +64,99 @@ export type Category = (typeof CATEGORIES)[number];
 export const PRIORITIES = ["high", "medium", "low"] as const;
 export type Priority = (typeof PRIORITIES)[number];
 
+export const WORK_CATEGORIES = [
+  "tree_assessment",
+  "chipping_brush_removal",
+  "pruning_trimming",
+  "stump_removal",
+  "tree_removal",
+  "tree_replacement",
+  "tree_misc",
+] as const;
+export type WorkCategory = (typeof WORK_CATEGORIES)[number];
+export type HrmPriority = 1 | 2;
+
+export type NearbyRequest = {
+  id: string;
+  source_type: "cityworks_work_order";
+  work_category: string | null;
+  status: string | null;
+  date_initiated: string | null;
+  distance_m: number;
+  is_current: boolean;
+};
+
+export type PopulationImpact = {
+  dissemination_area_id: string;
+  population: number;
+  population_density_per_km2: number;
+  density_percentile: number;
+};
+
+export type LandEvidence = {
+  on_hrm_owned_land: boolean;
+  asset_code: string | null;
+  location_type: string | null;
+  pid: string | null;
+};
+
+export type ScoringInput = {
+  description: string | null;
+  descriptionLanguage: string | null;
+  questionnaireLocationAnswer: string | null;
+  questionnaireDangerAnswer: string | null;
+  landStatus: LandStatus;
+  utilityProximityM: number | null;
+  utilityFeatureType: string | null;
+  windContext: string | null;
+  eabFlag: boolean;
+  historicalPatternNote: string | null;
+  populationImpact: PopulationImpact | null;
+  nearbyRequests: NearbyRequest[];
+  preFlaggedUrgent: boolean;
+  photoBase64: string | null;
+  photoMediaType: string | null;
+};
+
+export type ScoringOutput = {
+  work_category: WorkCategory;
+  immediate_threat: boolean;
+  visible_hazard_signals: string[];
+  reason: string;
+  confidence: number;
+  missing_detail: string | null;
+  photo_shows_tree_hazard: boolean;
+};
+
+export type CategorizationAccepted = {
+  status: "accepted";
+  work_category: WorkCategory;
+  priority: HrmPriority;
+  tier: "imminent_hazard" | "routine";
+  nearby_requests: NearbyRequest[];
+  population_impact: PopulationImpact | null;
+  land_check: LandEvidence;
+  visible_hazard_signals: string[];
+  reason: string;
+  confidence: number;
+  missing_detail: string | null;
+  photo_shows_tree_hazard: boolean;
+  requires_human_review: true;
+};
+
+export type CategorizationResult =
+  | CategorizationAccepted
+  | {
+      status: "rejected";
+      rejection_reason: "NOT_HRM_OWNED";
+      land_check: LandEvidence;
+    }
+  | {
+      status: "error";
+      error: "INVALID_INPUT" | "AI_UNAVAILABLE";
+      message: string;
+    };
+
 export type Report = {
   id: string;
   created_at: string;

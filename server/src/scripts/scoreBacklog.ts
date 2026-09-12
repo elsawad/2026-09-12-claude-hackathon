@@ -6,7 +6,7 @@ import { getLandStatus, getUtilityProximity } from "../geometry.js";
 import { getEabFlag } from "../eab.js";
 import { getWindContext } from "../wind.js";
 import { scoreReport } from "../scoring.js";
-import { tierFrom } from "../review.js";
+import { priorityFor } from "../categorization.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT_FILE = path.join(__dirname, "..", "..", "..", "data", "scored-backlog.json");
@@ -74,12 +74,17 @@ async function main() {
         windContext,
         eabFlag,
         historicalPatternNote: null,
+        populationImpact: null,
+        nearbyRequests: [],
         preFlaggedUrgent: false,
         photoBase64: null,
         photoMediaType: null
       });
-      const tier = tierFrom(scoring.priority, scoring.category);
-      console.log(`[${i + 1}/${withCoords.length}] ${attrs.OBJECTID} -> ${scoring.category}/${scoring.priority} (${tier}, ${scoring.confidence})`);
+      const priority = priorityFor(scoring.work_category, scoring.immediate_threat);
+      const tier = priority === 1 ? "imminent_hazard" : "routine";
+      console.log(
+        `[${i + 1}/${withCoords.length}] ${attrs.OBJECTID} -> ${scoring.work_category}, priority=${priority} (${scoring.confidence})`
+      );
       results.push({
         sourceObjectId: attrs.OBJECTID,
         dateInitiated: attrs.DATE_INITIATED,
@@ -88,7 +93,7 @@ async function main() {
         rawAttributes: attrs,
         landStatus: landStatus.status,
         utilityProximityM: utilityProximity?.distanceM ?? null,
-        scoring: { ...scoring, tier }
+        scoring: { ...scoring, priority, tier }
       });
     } catch (err) {
       console.error(`[${i + 1}/${withCoords.length}] ${attrs.OBJECTID} FAILED:`, (err as Error).message);
