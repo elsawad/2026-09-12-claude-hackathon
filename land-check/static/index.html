@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HRM Public Land Check</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link rel="stylesheet" href="/static/app.css" />
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <aside class="panel">
+      <p class="eyebrow">Canopy Watch · Halifax</p>
+      <h1>Public land check</h1>
+      <p class="lede">
+        Each Cityworks work order is plotted by coordinate and tested against
+        HRM-owned land
+        <a
+          href="https://www.arcgis.com/apps/mapviewer/index.html?url=https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/ArcGIS/rest/services/HRM_Owned_Land/FeatureServer/0&source=sd"
+          target="_blank"
+          rel="noreferrer"
+          >10,194 municipal parcels</a
+        >.
+      </p>
+
+      <div class="stats" id="stats">
+        <div class="stat">
+          <strong id="stat-on">—</strong>
+          <span>On HRM land</span>
+        </div>
+        <div class="stat">
+          <strong id="stat-off">—</strong>
+          <span>Not on HRM land</span>
+        </div>
+        <div class="stat">
+          <strong id="stat-pct">—</strong>
+          <span>Share on public land</span>
+        </div>
+      </div>
+
+      <div class="filters">
+        <button class="chip active" data-land="">All coordinates</button>
+        <button class="chip" data-land="1">On public land</button>
+        <button class="chip" data-land="0">Not public land</button>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="treesOnly" />
+        Tree work orders only
+      </label>
+
+      <form id="searchForm" class="search">
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Work order ID or click the map"
+          autocomplete="off"
+        />
+        <button type="submit">Find</button>
+      </form>
+
+      <p class="hint">
+        Click any point for its coordinates. Click empty map to test an arbitrary
+        location.
+      </p>
+
+      <div id="detail" class="detail empty">
+        <p>No location selected.</p>
+      </div>
+    </aside>
+
+    <div class="legend">
+      <span><i class="dot on"></i> On HRM-owned land</span>
+      <span><i class="dot off"></i> Not on HRM-owned land</span>
+    </div>
+
+    <p id="zoomHint" class="zoom-hint hidden"></p>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
