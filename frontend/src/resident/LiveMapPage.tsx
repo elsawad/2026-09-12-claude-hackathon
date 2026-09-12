@@ -3,15 +3,9 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { confirmReport, getPublicReports, type PublicReport } from "../lib/api";
 import { getSessionToken } from "../lib/session";
+import { TIER_COLORS } from "../mapColors";
 
 const HALIFAX_CENTER: [number, number] = [44.6488, -63.5752];
-
-const TIER_COLORS: Record<string, string> = {
-  utility_emergency: "#a3281c",
-  imminent_hazard: "#b8590a",
-  routine: "#1f6f43",
-  insufficient_info: "#5b564a"
-};
 
 export default function LiveMapPage() {
   const mapEl = useRef<HTMLDivElement>(null);

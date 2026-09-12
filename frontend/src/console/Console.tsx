@@ -211,9 +211,12 @@ export default function Console() {
 
   return (
     <div className="console">
+      <div className="brand-ribbon">Halifax Regional Municipality — community pilot project</div>
       <header className="header">
         <a className="brand-btn" href="/">
-          Canopy Watch
+          <span className="wordmark">Halifax</span>
+          <span className="brand-divider" aria-hidden="true" />
+          <span className="brand-product">Canopy Watch</span>
         </a>
         <nav>
           <a href="/report">Report</a>
@@ -226,7 +229,7 @@ export default function Console() {
 
       <header className="console-head">
         <div>
-          <p className="eyebrow">Canopy Watch</p>
+          <p className="eyebrow">Urban Forestry</p>
           <h1>City console</h1>
         </div>
         <label className="officer">
