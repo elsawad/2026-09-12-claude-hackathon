@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./LandCheck.css";
+import { MAP_COLORS } from "./mapColors";
 
 type Stats = {
   on_hrm_land: number;
@@ -73,9 +74,9 @@ export default function LandCheck() {
     if (probeRef.current) map.removeLayer(probeRef.current);
     probeRef.current = L.circleMarker([lat, lon], {
       radius: 9,
-      color: "#14241b",
+      color: MAP_COLORS.probeStroke,
       weight: 2,
-      fillColor: on ? "#d7e27c" : "#ffffff",
+      fillColor: on ? MAP_COLORS.onFill : "#ffffff",
       fillOpacity: 1,
     }).addTo(map);
   }
@@ -111,8 +112,8 @@ export default function LandCheck() {
       const marker = L.circleMarker([point.lat, point.lon], {
         renderer: canvas,
         radius: 5,
-        color: point.on ? "#2f6b32" : "#9a4d31",
-        fillColor: point.on ? "#7dcc7a" : "#e08963",
+        color: point.on ? MAP_COLORS.onStroke : MAP_COLORS.offStroke,
+        fillColor: point.on ? MAP_COLORS.onFill : MAP_COLORS.offFill,
         fillOpacity: 0.85,
         weight: 1,
       });

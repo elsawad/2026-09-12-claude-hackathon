@@ -1,23 +1,18 @@
+/*
+ * Floating panels over a map, but the same Halifax system as the rest of
+ * the app — this page used to be a standalone dark theme with its own
+ * fonts and palette, which made the land tool read as a different product.
+ */
 .land-check {
-  --ink: #14241b;
-  --panel: rgba(16, 32, 24, 0.92);
-  --text: #eef4ea;
-  --muted: #b7c4b3;
-  --on: #7dcc7a;
-  --off: #e08963;
-  --line: rgba(238, 244, 234, 0.12);
-  --accent: #d7e27c;
+  --panel: rgba(255, 255, 255, 0.96);
+  --on: var(--ok);
+  --off: var(--danger);
+  --line: var(--border);
 
   position: relative;
-  height: calc(100svh - 3.5rem);
+  height: calc(100svh - 5.2rem);
   color: var(--text);
-  background: #0c1610;
-  font-family: "IBM Plex Sans", var(--sans), sans-serif;
-}
-
-.land-check h1,
-.land-check .eyebrow {
-  font-family: Fraunces, Georgia, serif;
+  background: var(--bg);
 }
 
 .land-check a {
@@ -38,9 +33,10 @@
   max-height: calc(100% - 32px);
   overflow: auto;
   padding: 20px;
-  border-radius: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   background: var(--panel);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 30px rgba(0, 43, 73, 0.14);
   backdrop-filter: blur(12px);
 }
 
@@ -55,9 +51,10 @@
 .land-check h1 {
   margin: 0 0 8px;
   font-size: 28px;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1.1;
-  color: var(--text);
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
 }
 
 .land-check .lede {
@@ -78,14 +75,14 @@
 .land-check .stat {
   padding: 10px 8px;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
 }
 
 .land-check .stat strong {
   display: block;
   font-size: 18px;
-  color: var(--text);
+  color: var(--text-strong);
 }
 
 .land-check .stat span {
@@ -122,7 +119,7 @@
 
 .land-check .chip.active {
   background: var(--accent);
-  color: var(--ink);
+  color: var(--accent-contrast);
   border-color: var(--accent);
 }
 
@@ -146,9 +143,9 @@
   flex: 1;
   min-width: 0;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface);
   color: var(--text);
-  border-radius: 10px;
+  border-radius: var(--radius);
   padding: 8px 10px;
 }
 
@@ -171,7 +168,7 @@
 .land-check .detail h2 {
   margin: 0 0 6px;
   font-size: 16px;
-  color: var(--text);
+  color: var(--text-strong);
 }
 
 .land-check .kv {
@@ -200,12 +197,12 @@
 }
 
 .land-check .badge.on {
-  background: rgba(125, 204, 122, 0.2);
+  background: rgba(63, 107, 63, 0.14);
   color: var(--on);
 }
 
 .land-check .badge.off {
-  background: rgba(224, 137, 99, 0.18);
+  background: rgba(163, 40, 28, 0.12);
   color: var(--off);
 }
 
@@ -218,6 +215,7 @@
   gap: 14px;
   padding: 8px 12px;
   border-radius: 999px;
+  border: 1px solid var(--border);
   background: var(--panel);
   font-size: 12px;
 }
@@ -243,12 +241,13 @@
   margin: 0;
   padding: 8px 12px;
   border-radius: 999px;
+  border: 1px solid var(--border);
   background: var(--panel);
   font-size: 12px;
 }
 
 .land-check .leaflet-container {
-  background: #cdd8c8;
+  background: var(--bg-deep);
 }
 
 @media (max-width: 720px) {
@@ -258,7 +257,7 @@
     left: 0;
     width: 100%;
     max-height: 42%;
-    border-radius: 20px 20px 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
   .land-check .legend {

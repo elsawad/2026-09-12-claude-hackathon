@@ -47,9 +47,12 @@ function Home() {
 
   return (
     <div className={`page${view === "land" ? " page-land" : " home"}`}>
+      <div className="brand-ribbon">Halifax Regional Municipality — community pilot project</div>
       <header className="header">
         <button type="button" className="brand-btn" onClick={() => go("home")}>
-          Canopy Watch
+          <span className="wordmark">Halifax</span>
+          <span className="brand-divider" aria-hidden="true" />
+          <span className="brand-product">Canopy Watch</span>
         </button>
         <nav>
           <button

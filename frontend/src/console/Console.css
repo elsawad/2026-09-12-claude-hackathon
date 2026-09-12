@@ -3,7 +3,7 @@
   display: flex;
   flex-direction: column;
   color: var(--text-strong);
-  background: #f3f4f0;
+  background: var(--surface-sunken);
 }
 
 .console-head {
@@ -19,16 +19,27 @@
   margin: 0;
   font-family: var(--display);
   font-size: 1.45rem;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
 }
 
 .eyebrow {
   margin: 0 0 0.1rem;
   font-size: 0.7rem;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent);
+}
+
+.eyebrow a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.eyebrow a:hover {
+  text-decoration: underline;
 }
 
 .officer {
@@ -44,8 +55,8 @@
 .override select,
 .override textarea {
   border: 1px solid var(--border);
-  background: #fff;
-  border-radius: 0.3rem;
+  background: var(--surface);
+  border-radius: var(--radius);
   padding: 0.35rem 0.5rem;
   font: inherit;
   color: var(--text-strong);
@@ -66,8 +77,8 @@
 .banner {
   margin: 0;
   padding: 0.5rem 1.25rem;
-  background: #f6e0c8;
-  color: #6a3410;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
   font-size: 0.88rem;
 }
 
@@ -127,7 +138,7 @@
 .chip.on {
   background: var(--text-strong);
   border-color: var(--text-strong);
-  color: #f7faf5;
+  color: var(--accent-contrast);
 }
 
 .queue ul {
@@ -157,14 +168,14 @@
   text-align: left;
   border: 1px solid transparent;
   background: transparent;
-  border-radius: 0.45rem;
+  border-radius: var(--radius);
   padding: 0.45rem 0.5rem;
   cursor: pointer;
   color: inherit;
 }
 
 .row.on {
-  background: #fff;
+  background: var(--surface);
   border-color: var(--border);
 }
 
@@ -194,10 +205,10 @@
 }
 
 .p-high {
-  color: #8b1e1e;
+  color: var(--danger);
 }
 .p-medium {
-  color: #9a4a12;
+  color: var(--warn);
 }
 .p-low {
   color: var(--muted);
@@ -233,8 +244,8 @@
   margin: 0.15rem 0 0.2rem;
   font-family: var(--display);
   font-size: 1.45rem;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .sla {
@@ -318,16 +329,16 @@
 .override button {
   appearance: none;
   border: 1px solid transparent;
-  border-radius: 0.35rem;
+  border-radius: var(--radius);
   padding: 0.45rem 0.75rem;
   background: var(--accent);
-  color: #f7faf5;
+  color: var(--accent-contrast);
   cursor: pointer;
 }
 
 .console .actions button.secondary,
 .console .actions button.ghost {
-  background: #fff;
+  background: var(--surface);
   border-color: var(--border);
   color: var(--text-strong);
 }

@@ -37,6 +37,7 @@
     "typescript": "^5.9.2"
   },
   "allowScripts": {
+    "better-sqlite3@11.7.0": true,
     "esbuild@0.28.2": true
   }
 }

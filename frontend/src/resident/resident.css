@@ -11,9 +11,9 @@
 }
 
 .resident .card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 0.6rem;
+  border-radius: var(--radius-lg);
   padding: 1.1rem 1.2rem 1.3rem;
   display: flex;
   flex-direction: column;
@@ -24,7 +24,7 @@
   margin: 0;
   font-family: var(--display);
   font-size: 1.3rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-strong);
 }
@@ -54,24 +54,24 @@
 
 .resident .error-text {
   margin: 0;
-  color: #8b1e1e;
+  color: var(--danger);
   font-size: 0.85rem;
 }
 
 .resident .notice {
   margin: 0;
   padding: 0.6rem 0.75rem;
-  background: #f6e0c8;
-  color: #6a3410;
-  border-radius: 0.4rem;
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  border-radius: var(--radius);
   font-size: 0.85rem;
 }
 
 .resident .emergency-banner {
   padding: 1.1rem;
-  border-radius: 0.6rem;
-  background: #f8d9d3;
-  color: #6b1a10;
+  border-radius: var(--radius-lg);
+  background: var(--danger-bg);
+  color: var(--danger-ink);
   font-size: 1.05rem;
   line-height: 1.55;
 }
@@ -92,8 +92,8 @@
 .resident select,
 .resident textarea {
   border: 1px solid var(--border);
-  background: #fff;
-  border-radius: 0.35rem;
+  background: var(--surface);
+  border-radius: var(--radius);
   padding: 0.5rem 0.6rem;
   font: inherit;
   color: var(--text-strong);
@@ -129,23 +129,23 @@
 .resident button {
   appearance: none;
   border: 1px solid transparent;
-  border-radius: 0.4rem;
+  border-radius: var(--radius);
   padding: 0.65rem 1rem;
   font: inherit;
   font-size: 0.95rem;
   background: var(--accent);
-  color: #f7faf5;
+  color: var(--accent-contrast);
   cursor: pointer;
 }
 
 .resident button.secondary {
-  background: #fff;
+  background: var(--surface);
   border-color: var(--border);
   color: var(--text-strong);
 }
 
 .resident button.danger {
-  background: #8b1e1e;
+  background: var(--danger);
 }
 
 .resident button:disabled {
@@ -168,34 +168,34 @@
   border-radius: 999px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--surface);
 }
 
 .resident .tier-utility_emergency {
-  background: #a3281c;
+  background: var(--tier-utility);
 }
 .resident .tier-imminent_hazard {
-  background: #b8590a;
+  background: var(--tier-imminent);
 }
 .resident .tier-routine {
-  background: #1f6f43;
+  background: var(--tier-routine);
 }
 .resident .tier-insufficient_info {
-  background: #5b564a;
+  background: var(--tier-insufficient);
 }
 
 .resident .reference-code {
   text-align: center;
   font-family: var(--display);
   font-size: 1.6rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--text-strong);
 }
 
 .resident .photo-preview {
   margin-top: 0.5rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-lg);
   max-height: 200px;
   width: 100%;
   object-fit: cover;
@@ -204,7 +204,7 @@
 .resident .pick-map,
 .resident .live-map {
   height: 320px;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--border);
 }
