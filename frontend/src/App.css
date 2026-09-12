@@ -57,7 +57,8 @@
   text-decoration: none;
 }
 
-.header nav a:hover {
+.header nav a:hover,
+.header nav a.nav-active {
   color: var(--text-strong);
   background: rgba(47, 93, 58, 0.1);
 }
@@ -66,7 +67,8 @@
   color: #b7c4b3;
 }
 
-.page-land .header nav a:hover {
+.page-land .header nav a:hover,
+.page-land .header nav a.nav-active {
   color: #eef4ea;
   background: rgba(215, 226, 124, 0.15);
 }

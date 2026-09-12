@@ -211,6 +211,19 @@ export default function Console() {
 
   return (
     <div className="console">
+      <header className="header">
+        <a className="brand-btn" href="/">
+          Canopy Watch
+        </a>
+        <nav>
+          <a href="/report">Report</a>
+          <a href="/land">Land check</a>
+          <a className="nav-active" href="/console" aria-current="page">
+            City console
+          </a>
+        </nav>
+      </header>
+
       <header className="console-head">
         <div>
           <p className="eyebrow">Canopy Watch</p>
