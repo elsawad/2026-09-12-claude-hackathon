@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Backyard tree">
+  <rect width="160" height="160" fill="#e4eadc"/>
+  <rect x="0" y="118" width="160" height="42" fill="#b7c4a8"/>
+  <rect x="18" y="86" width="52" height="40" fill="#efe7d6"/>
+  <polygon points="14,86 44,62 74,86" fill="#6d4c41"/>
+  <rect x="38" y="104" width="10" height="22" fill="#5b4030"/>
+  <circle cx="112" cy="78" r="32" fill="#4d7a52"/>
+  <rect x="106" y="100" width="10" height="28" fill="#5b4030"/>
+  <rect x="88" y="128" width="44" height="8" fill="#cbb892"/>
+</svg>

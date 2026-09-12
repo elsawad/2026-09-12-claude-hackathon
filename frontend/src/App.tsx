@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import Console from "./console/Console";
 import "./App.css";
 
 type Health = { ok: boolean; service: string };
 
-function App() {
+function Home() {
   const [health, setHealth] = useState<Health | null>(null);
 
   useEffect(() => {
@@ -14,12 +15,12 @@ function App() {
   }, []);
 
   return (
-    <div className="page">
+    <div className="page home">
       <header className="header">
         <p className="brand">Canopy Watch</p>
         <nav>
           <a href="#report">Report</a>
-          <a href="#about">About</a>
+          <a href="/console">City console</a>
         </nav>
       </header>
 
@@ -34,9 +35,9 @@ function App() {
             <button type="button" disabled>
               Report a tree
             </button>
-            <button type="button" className="secondary" disabled>
+            <a className="button secondary" href="/console">
               City console
-            </button>
+            </a>
           </div>
           <p className="status">
             API:{" "}
@@ -56,6 +57,11 @@ function App() {
       </main>
     </div>
   );
+}
+
+function App() {
+  if (window.location.pathname.startsWith("/console")) return <Console />;
+  return <Home />;
 }
 
 export default App;

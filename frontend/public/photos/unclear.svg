@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Unclear photo">
+  <rect width="160" height="160" fill="#d9d4c6"/>
+  <circle cx="80" cy="78" r="40" fill="#b7b19f"/>
+  <rect x="74" y="108" width="12" height="28" fill="#9a927e"/>
+  <text x="80" y="86" text-anchor="middle" font-size="28" fill="#6f6a5c" font-family="Georgia, serif">?</text>
+</svg>

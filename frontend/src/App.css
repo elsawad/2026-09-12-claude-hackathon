@@ -70,8 +70,10 @@
   margin-bottom: 1.25rem;
 }
 
-button {
+.home button,
+.home .button {
   appearance: none;
+  display: inline-block;
   border: 1px solid transparent;
   border-radius: 0.4rem;
   padding: 0.7rem 1.1rem;
@@ -79,11 +81,16 @@ button {
   font-size: 0.95rem;
   background: var(--accent);
   color: #f7faf5;
+  text-decoration: none;
+}
+
+.home button:disabled {
   cursor: not-allowed;
   opacity: 0.85;
 }
 
-button.secondary {
+.home button.secondary,
+.home .button.secondary {
   background: transparent;
   border-color: var(--border);
   color: var(--text-strong);

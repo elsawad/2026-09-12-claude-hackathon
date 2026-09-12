@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Split limb over a house">
+  <rect width="160" height="160" fill="#d7e0d1"/>
+  <rect x="0" y="122" width="160" height="38" fill="#9aab93"/>
+  <rect x="18" y="92" width="64" height="38" fill="#efe7d6"/>
+  <polygon points="14,92 50,68 86,92" fill="#8b3a2a"/>
+  <rect x="42" y="104" width="12" height="26" fill="#5b4030"/>
+  <circle cx="112" cy="70" r="38" fill="#355c38"/>
+  <circle cx="132" cy="62" r="22" fill="#2a4a2e"/>
+  <rect x="106" y="96" width="12" height="36" fill="#5b4030"/>
+  <path d="M92 78 Q70 100 58 86" fill="none" stroke="#2a4a2e" stroke-width="8" stroke-linecap="round"/>
+</svg>

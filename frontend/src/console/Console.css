@@ -1,0 +1,386 @@
+.console {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  color: var(--text-strong);
+  background: #f3f4f0;
+}
+
+.console-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.console-head h1 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.eyebrow {
+  margin: 0 0 0.1rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.officer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.officer input,
+.queue-tools select,
+.override select,
+.override textarea {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 0.3rem;
+  padding: 0.35rem 0.5rem;
+  font: inherit;
+  color: var(--text-strong);
+}
+
+.officer input {
+  width: 8.5rem;
+}
+
+.strip {
+  margin: 0;
+  padding: 0.55rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.banner {
+  margin: 0;
+  padding: 0.5rem 1.25rem;
+  background: #f6e0c8;
+  color: #6a3410;
+  font-size: 0.88rem;
+}
+
+.workspace {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(18rem, 22rem) 1fr;
+  min-height: 0;
+}
+
+.queue {
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  padding: 0.7rem 0.85rem 0.35rem;
+}
+
+.queue-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  padding: 0.15rem 0.85rem 0.6rem;
+}
+
+.queue-tools label {
+  display: grid;
+  gap: 0.15rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.chip,
+.console button {
+  font: inherit;
+}
+
+.chip {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.22rem 0.65rem;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.chip.on {
+  background: var(--text-strong);
+  border-color: var(--text-strong);
+  color: #f7faf5;
+}
+
+.queue ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.5rem 1rem;
+  overflow: auto;
+}
+
+.group {
+  margin: 0 0 0.55rem;
+}
+
+.group-head {
+  margin: 0.15rem 0.4rem 0.25rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.row {
+  width: 100%;
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 0.45rem;
+  padding: 0.45rem 0.5rem;
+  cursor: pointer;
+  color: inherit;
+}
+
+.row.on {
+  background: #fff;
+  border-color: var(--border);
+}
+
+.row-main {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.row-main strong {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.row-main span {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.pri {
+  flex: 0 0 3.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding-top: 0.15rem;
+}
+
+.p-high {
+  color: #8b1e1e;
+}
+.p-medium {
+  color: #9a4a12;
+}
+.p-low {
+  color: var(--muted);
+}
+
+.empty-row,
+.empty-detail,
+.note,
+.muted {
+  color: var(--muted);
+}
+
+.empty-row,
+.empty-detail {
+  padding: 1rem;
+}
+
+.detail {
+  overflow: auto;
+  padding: 1.1rem 1.4rem 2rem;
+  max-width: 40rem;
+}
+
+.ref {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.detail h2 {
+  margin: 0.15rem 0 0.2rem;
+  font-family: var(--display);
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.sla {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.2rem;
+  margin: 0 0 1.1rem;
+}
+
+.facts dt {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.facts dd {
+  margin: 0.15rem 0 0;
+}
+
+.facts small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.detail a {
+  color: var(--accent);
+}
+
+.detail h3 {
+  margin: 0.9rem 0 0.25rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.copy {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.nearby ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nearby button {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0.2rem 0;
+  color: var(--accent);
+  cursor: pointer;
+  text-align: left;
+}
+
+.decision {
+  margin: 0.8rem 0;
+  font-size: 0.9rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.8rem 0;
+}
+
+.console .actions button,
+.override button {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 0.35rem;
+  padding: 0.45rem 0.75rem;
+  background: var(--accent);
+  color: #f7faf5;
+  cursor: pointer;
+}
+
+.console .actions button.secondary,
+.console .actions button.ghost {
+  background: #fff;
+  border-color: var(--border);
+  color: var(--text-strong);
+}
+
+.console .actions button.ghost {
+  background: transparent;
+}
+
+.console .actions button:disabled,
+.override button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.override {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 24rem;
+  margin-bottom: 1rem;
+}
+
+.override label {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.8rem;
+}
+
+.audit {
+  margin-top: 1.2rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+.audit p,
+.audit li {
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.audit ol {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+@media (max-width: 800px) {
+  .workspace,
+  .facts {
+    display: block;
+  }
+
+  .queue {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    max-height: 40vh;
+  }
+}

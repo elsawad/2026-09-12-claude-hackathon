@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Tree near a power line">
+  <rect width="160" height="160" fill="#c9d6c4"/>
+  <rect x="0" y="118" width="160" height="42" fill="#8ea186"/>
+  <rect x="118" y="18" width="8" height="110" fill="#5b5348"/>
+  <line x1="20" y1="36" x2="150" y2="48" stroke="#2b2b2b" stroke-width="3"/>
+  <line x1="20" y1="48" x2="150" y2="60" stroke="#2b2b2b" stroke-width="2"/>
+  <circle cx="62" cy="78" r="36" fill="#2f5d3a"/>
+  <circle cx="86" cy="70" r="28" fill="#3f7349"/>
+  <rect x="72" y="96" width="10" height="34" fill="#5b4030"/>
+  <path d="M96 58 L128 46" stroke="#3f7349" stroke-width="6" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Fallen tree across a path">
+  <rect width="160" height="160" fill="#cfd8c6"/>
+  <rect x="0" y="108" width="160" height="52" fill="#7f9276"/>
+  <rect x="18" y="118" width="124" height="10" fill="#cbb892"/>
+  <rect x="26" y="40" width="12" height="70" fill="#5b4030"/>
+  <ellipse cx="32" cy="38" rx="22" ry="16" fill="#355c38"/>
+  <rect x="40" y="96" width="96" height="10" rx="4" transform="rotate(-12 88 101)" fill="#5b4030"/>
+  <ellipse cx="118" cy="86" rx="28" ry="20" fill="#2f5d3a"/>
+</svg>

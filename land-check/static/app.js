@@ -96,6 +96,7 @@ function setDetail(html) {
   const el = document.getElementById("detail");
   el.classList.remove("empty");
   el.innerHTML = html;
+  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function landBadge(on) {

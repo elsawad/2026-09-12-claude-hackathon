@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Standing dead tree in a park">
+  <rect width="160" height="160" fill="#dce6d4"/>
+  <rect x="0" y="124" width="160" height="36" fill="#8ea186"/>
+  <circle cx="30" cy="118" r="18" fill="#4d7a52"/>
+  <circle cx="138" cy="116" r="22" fill="#3f7349"/>
+  <rect x="74" y="48" width="10" height="80" fill="#6a5a4a"/>
+  <path d="M78 56 L52 78 M78 62 L108 80 M78 72 L58 96 M78 70 L112 94" stroke="#6a5a4a" stroke-width="4" stroke-linecap="round"/>
+</svg>

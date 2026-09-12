@@ -9,3 +9,4 @@ build/
 coverage/
 .vite/
 *.tsbuildinfo
+server/data/state.json
