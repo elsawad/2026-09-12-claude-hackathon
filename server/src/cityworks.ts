@@ -1,9 +1,13 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CACHE_DIR = path.join(__dirname, "..", "data", "cache");
+// See src/dataLayers.ts — same read-only-filesystem-outside-/tmp reasoning.
+const CACHE_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), "canopy-watch-cache")
+  : path.join(__dirname, "..", "data", "cache");
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;

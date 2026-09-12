@@ -17,11 +17,13 @@
     "@anthropic-ai/sdk": "^0.32.1",
     "@electric-sql/pglite": "^0.2.15",
     "@turf/turf": "^7.1.0",
+    "@vercel/blob": "^0.27.0",
     "better-sqlite3": "^11.7.0",
     "cors": "^2.8.6",
     "dotenv": "^16.4.5",
     "express": "^5.2.1",
-    "multer": "^2.0.0"
+    "multer": "^2.0.0",
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",
@@ -30,7 +32,11 @@
     "@types/geojson": "^7946.0.14",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.20.2",
+    "@types/pg": "^8.11.10",
     "tsx": "^4.23.13",
     "typescript": "^5.9.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
   }
 }
