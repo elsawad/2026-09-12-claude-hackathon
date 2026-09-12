@@ -1,10 +1,16 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { FeatureCollection } from "geojson";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CACHE_DIR = path.join(__dirname, "data", "cache");
+// Vercel's filesystem is read-only outside /tmp — cache there instead. It's
+// ephemeral per-instance, which is fine: worst case is one live re-fetch
+// per cold start rather than a crash.
+const CACHE_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), "canopy-watch-cache")
+  : path.join(__dirname, "data", "cache");
 fs.mkdirSync(CACHE_DIR, { recursive: true });
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // re-fetch at most once a day

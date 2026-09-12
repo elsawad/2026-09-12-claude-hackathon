@@ -52,6 +52,11 @@ See [`docs/data-sources.md`](docs/data-sources.md) for the real, verified REST e
 field names behind every open-data layer — the landing pages describe intent, not field names,
 and we hit the actual services directly rather than guessing.
 
+**Deploying:** the app is Vercel-ready — `server/db.ts` and `server/app.ts` switch to Postgres
+(Neon) and Vercel Blob automatically when `DATABASE_URL`/`BLOB_READ_WRITE_TOKEN` are set, and
+fall back to PGlite + local disk when they aren't. See
+[`docs/deploy-vercel.md`](docs/deploy-vercel.md) for the (free-tier) setup steps.
+
 ## Setup (root-level track)
 
 ```bash

@@ -1,4 +1,4 @@
-import { db, generateReferenceCode } from "./db.js";
+import { dbPromise, generateReferenceCode } from "./db.js";
 import type { Report, AuditLogEntry, LocationSource, LandStatus, LandStatusSource, Tier, ReviewState, ReportStatus } from "./types.js";
 
 function row(r: any): Report {
@@ -66,6 +66,7 @@ export interface NewReportInput {
 }
 
 export async function insertReport(input: NewReportInput): Promise<Report> {
+  const db = await dbPromise;
   const referenceCode = generateReferenceCode();
   const result = await db.query(
     `INSERT INTO reports (
@@ -110,17 +111,20 @@ export async function insertReport(input: NewReportInput): Promise<Report> {
 }
 
 export async function getReportById(id: string): Promise<Report | null> {
+  const db = await dbPromise;
   const result = await db.query(`SELECT * FROM reports WHERE id = $1`, [id]);
   return result.rows[0] ? row(result.rows[0]) : null;
 }
 
 export async function getReportByReferenceCode(code: string): Promise<Report | null> {
+  const db = await dbPromise;
   const result = await db.query(`SELECT * FROM reports WHERE reference_code = $1`, [code]);
   return result.rows[0] ? row(result.rows[0]) : null;
 }
 
 /** Public map + officer queue both read from this; callers filter fields as needed. */
 export async function listReports(): Promise<Report[]> {
+  const db = await dbPromise;
   const result = await db.query(`SELECT * FROM reports ORDER BY created_at DESC`);
   return result.rows.map(row);
 }
@@ -129,7 +133,8 @@ const EARTH_RADIUS_M = 6371000;
 
 /** Nearby-duplicate check (~50m) against OUR OWN reports, not HRM's historical data. */
 export async function findNearbyReport(lat: number, lng: number, radiusM = 50): Promise<Report | null> {
-  // Cheap bounding-box prefilter in SQL, exact haversine check in JS (PGlite has no PostGIS).
+  const db = await dbPromise;
+  // Cheap bounding-box prefilter in SQL, exact haversine check in JS (no PostGIS either way).
   const degLat = radiusM / 111_320;
   const degLng = radiusM / (111_320 * Math.cos((lat * Math.PI) / 180));
   const result = await db.query(
@@ -151,6 +156,7 @@ export async function findNearbyReport(lat: number, lng: number, radiusM = 50): 
 }
 
 export async function confirmReport(reportId: string, sessionToken: string): Promise<{ ok: boolean; alreadyConfirmed: boolean }> {
+  const db = await dbPromise;
   const existing = await db.query(`SELECT 1 FROM confirmations WHERE report_id = $1 AND session_token = $2`, [
     reportId,
     sessionToken
@@ -177,6 +183,7 @@ export async function updateReview(
     status?: ReportStatus;
   }
 ): Promise<Report | null> {
+  const db = await dbPromise;
   const result = await db.query(
     `UPDATE reports SET
        review_state = $2,
@@ -193,6 +200,7 @@ export async function updateReview(
 }
 
 export async function insertAuditLog(entry: Omit<AuditLogEntry, "id" | "timestamp">): Promise<void> {
+  const db = await dbPromise;
   await db.query(`INSERT INTO audit_log (report_id, actor, action, before, after) VALUES ($1,$2,$3,$4,$5)`, [
     entry.report_id,
     entry.actor,
@@ -203,6 +211,7 @@ export async function insertAuditLog(entry: Omit<AuditLogEntry, "id" | "timestam
 }
 
 export async function getAuditLog(reportId: string): Promise<AuditLogEntry[]> {
+  const db = await dbPromise;
   const result = await db.query(`SELECT * FROM audit_log WHERE report_id = $1 ORDER BY timestamp ASC`, [reportId]);
   return result.rows as AuditLogEntry[];
 }
