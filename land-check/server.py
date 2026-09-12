@@ -5,15 +5,12 @@ import sqlite3
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
 from hrm_land import LandIndex, in_hrm_bbox
 
 ROOT = Path(__file__).resolve().parents[1]
 SQLITE = ROOT / "Cityworks_Work_Orders_5341484547526583350.sqlite"
 LAND = ROOT / "hrm_owned_land.geojson"
-STATIC = Path(__file__).resolve().parent / "static"
 
 app = FastAPI(title="HRM Public Land Check")
 app.add_middleware(
@@ -226,14 +223,6 @@ def check(lat: float, lon: float):
         **summary,
         "nearby_work_orders": nearby,
     }
-
-
-app.mount("/static", StaticFiles(directory=STATIC), name="static")
-
-
-@app.get("/")
-def index():
-    return FileResponse(STATIC / "index.html")
 
 
 if __name__ == "__main__":

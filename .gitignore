@@ -1,12 +1,21 @@
 node_modules/
 dist/
+dist-ssr/
 build/
 .DS_Store
 *.log
 .env
 .env.*
 !.env.example
+.env.local
 coverage/
 .vite/
 *.tsbuildinfo
-server/data/state.json
+.venv/
+__pycache__/
+*.pyc
+*.local
+
+# Local datastore and uploads — never commit.
+server/data/
+server/uploads/

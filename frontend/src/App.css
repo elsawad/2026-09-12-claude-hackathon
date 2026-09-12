@@ -4,36 +4,114 @@
   flex-direction: column;
 }
 
+.page-land {
+  height: 100svh;
+  overflow: hidden;
+}
+
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
+  padding: 0.85rem 1.5rem;
   border-bottom: 1px solid var(--border);
+  background: rgba(237, 242, 232, 0.92);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
 }
 
-.brand {
+.page-land .header {
+  border-bottom-color: rgba(20, 36, 27, 0.35);
+  background: rgba(16, 32, 24, 0.94);
+}
+
+.brand-btn {
   margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
   font-family: var(--display);
   font-size: 1.15rem;
   font-weight: 600;
   color: var(--text-strong);
   letter-spacing: -0.02em;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.page-land .brand-btn {
+  color: #eef4ea;
 }
 
 .header nav {
   display: flex;
-  gap: 1.25rem;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.header a {
+.header nav a {
   color: var(--text);
-  text-decoration: none;
   font-size: 0.95rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.35rem;
+  text-decoration: none;
 }
 
-.header a:hover {
+.header nav a:hover {
   color: var(--text-strong);
+  background: rgba(47, 93, 58, 0.1);
+}
+
+.page-land .header nav a {
+  color: #b7c4b3;
+}
+
+.page-land .header nav a:hover {
+  color: #eef4ea;
+  background: rgba(215, 226, 124, 0.15);
+}
+
+.header nav button {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.35rem;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.page-land .header nav button {
+  color: #b7c4b3;
+}
+
+.header nav button:hover,
+.header nav button.nav-active {
+  color: var(--text-strong);
+  background: rgba(47, 93, 58, 0.1);
+}
+
+.page-land .header nav button:hover,
+.page-land .header nav button.nav-active {
+  color: #eef4ea;
+  background: rgba(215, 226, 124, 0.15);
+}
+
+.text-link {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: var(--accent);
+  cursor: pointer;
+  opacity: 1;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .hero {
@@ -94,6 +172,8 @@
   background: transparent;
   border-color: var(--border);
   color: var(--text-strong);
+  cursor: pointer;
+  opacity: 1;
 }
 
 .status {
