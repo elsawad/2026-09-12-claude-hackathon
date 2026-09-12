@@ -89,7 +89,7 @@ export default function LocationCapture({ value, onChange }: Props) {
     return (
       <div className="field">
         <label>Location</label>
-        <div className="pill">
+        <div key="captured-location" className="pill">
           {labelForSource(value.source)} · {value.lat.toFixed(5)}, {value.lng.toFixed(5)}
         </div>
         <button
@@ -110,7 +110,7 @@ export default function LocationCapture({ value, onChange }: Props) {
     return (
       <div className="field">
         <label>Tap the map where the tree is</label>
-        <div ref={mapEl} className="pick-map" />
+        <div key="map-picker" ref={mapEl} className="pick-map" />
       </div>
     );
   }
