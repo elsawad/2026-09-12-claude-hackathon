@@ -14,8 +14,10 @@ export default function OfficerConsole() {
 
   return (
     <div className="app-shell wide">
+      <div className="brand-ribbon">HALIFAX REGIONAL MUNICIPALITY — COMMUNITY PILOT PROJECT</div>
       <div className="top-bar">
-        <span aria-hidden>🌳</span>
+        <span className="wordmark">Halifax</span>
+        <span className="divider" aria-hidden />
         <h1>Canopy Watch — Officer Console</h1>
         <button
           type="button"
@@ -59,8 +61,10 @@ function OfficerLogin({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <div className="app-shell">
+      <div className="brand-ribbon">HALIFAX REGIONAL MUNICIPALITY — COMMUNITY PILOT PROJECT</div>
       <div className="top-bar">
-        <span aria-hidden>🌳</span>
+        <span className="wordmark">Halifax</span>
+        <span className="divider" aria-hidden />
         <h1>Canopy Watch — Officer Console</h1>
       </div>
       <div className="screen">
