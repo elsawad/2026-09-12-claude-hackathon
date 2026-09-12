@@ -83,6 +83,7 @@ export interface NewReportInput {
   landStatusSource: LandStatusSource;
   category: Category;
   priority: Priority;
+  proposedTier?: Tier;
   reason: string | null;
   confidence: number | null;
   missingDetail: string | null;
@@ -99,7 +100,7 @@ export interface NewReportInput {
 export async function insertReport(input: NewReportInput): Promise<Report> {
   const db = await dbPromise;
   const referenceCode = generateReferenceCode();
-  const proposedTier: Tier = tierFrom(input.priority, input.category);
+  const proposedTier: Tier = input.proposedTier ?? tierFrom(input.priority, input.category);
   const result = await db.query(
     `INSERT INTO reports (
       created_at,

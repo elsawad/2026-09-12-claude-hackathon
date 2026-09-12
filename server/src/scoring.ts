@@ -1,75 +1,41 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { CATEGORIES, PRIORITIES, type Category, type Priority } from "./types.js";
+import {
+  WORK_CATEGORIES,
+  type ScoringInput,
+  type ScoringOutput,
+  type WorkCategory,
+} from "./types.js";
 
 const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env
 const MODEL = "claude-sonnet-5";
 
-export interface ScoringInput {
-  description: string | null;
-  descriptionLanguage: string | null;
-  questionnaireLocationAnswer: string | null;
-  questionnaireDangerAnswer: string | null;
-  landStatus: string;
-  utilityProximityM: number | null;
-  utilityFeatureType: string | null;
-  windContext: string | null;
-  eabFlag: boolean;
-  historicalPatternNote: string | null;
-  preFlaggedUrgent: boolean;
-  photoBase64: string | null;
-  photoMediaType: string | null;
-}
-
-export interface ScoringOutput {
-  category: Category;
-  priority: Priority;
-  reason: string;
-  confidence: number;
-  missing_detail: string | null;
-  photo_shows_tree_hazard: boolean;
-}
-
 const SYSTEM_PROMPT = `You are the triage assistant for Canopy Watch, a Halifax Regional \
-Municipality (HRM) tree-hazard reporting tool. You are proposing a category and priority for a \
+Municipality (HRM) tree-hazard reporting tool. You are preparing a recommendation for a \
 human arborist to review — you never make the final call, you only save them the 2-3 days it \
 currently takes for a request to reach a human at all.
 
-HRM's real Urban Forestry service standards distinguish two priorities: Priority 1 is an \
-immediate threat to the public, to property, or to park assets (e.g. a hanging limb over a \
-sidewalk, a tree leaning on a structure, a branch blocking a road) — assessed within 3 business \
-days and repaired within 1 business day. Priority 2 is routine (a tree that looks unhealthy but \
-poses no immediate threat, routine pruning, stump removal) — addressed within 12 to 36 months \
-depending on scope. You express your judgement through two fields instead of guessing a tier \
-directly:
+Choose exactly one HRM work category: tree assessment, chipping/brush removal, \
+pruning/trimming, stump removal, tree removal, tree replacement, or tree miscellaneous. \
+Classify an unclear tree condition as tree assessment rather than diagnosing damage that is \
+not visible.
 
-- "category": the best-fitting single label for what's actually wrong — "utility" (touching or \
-near power/utility infrastructure), "fallen" (already down), "hanging_limb" (a limb or branch \
-that has failed and is hanging), "pruning" (needs a trim, not a failure), "stump" (stump \
-removal), "disease" (looks unhealthy/dying but nothing has failed), "blockage" (blocking a road, \
-sidewalk, or driveway without a clean fit above), or "other" only when nothing above fits or you \
-genuinely can't tell.
-- "priority": "high" (matches HRM's Priority 1 — immediate threat to a person, structure, \
-vehicle, or right-of-way, right now), "medium" (a real issue but not an immediate threat), or \
-"low" (routine, no urgency).
-
-If you cannot responsibly choose between these with what's given, do not guess to look decisive: \
-set category to "other" and priority to "low", and use "missing_detail" to say exactly what \
-additional detail would resolve it (this is how the system flags a report as needing more \
-information rather than acting on a wrong confident guess). Do not use this combination for any \
-other reason — it exists specifically for "I don't have enough to go on."
-
-Anything near documented utility infrastructure (a transmission line, substation, tower, \
-pipeline, or tank) is "utility" category — this takes priority over every other signal, because \
-a tree near power infrastructure is not just an HRM tree matter.
+Separately identify whether the supplied evidence shows an immediate threat to the public, \
+property, or park assets right now, such as a hanging limb over a sidewalk, a tree contacting \
+a structure, or a branch blocking a road. Do not assign a priority yourself; application code \
+maps your evidence to HRM's published Priority 1 and Priority 2 rules.
 
 You are also the spam/content filter: if a photo is attached, judge whether it plausibly shows a \
 tree, branch, or related vegetation hazard at all (set photo_shows_tree_hazard accordingly). A \
 report with a photo that clearly shows something unrelated (a person, a receipt, a blank image, \
-an unrelated object) should get category "other", priority "low", and missing_detail asking for \
-a clear photo of the tree, regardless of what the description claims.
+an unrelated object) must set photo_shows_tree_hazard and immediate_threat to false, classify \
+the work as tree_assessment, and use missing_detail to ask for a clear photo of the tree, \
+regardless of what the description claims.
 
 Weigh wind context as supporting evidence only (higher wind can make an already-marginal hazard \
-more urgent) — never let wind alone push a report to "high" priority or "utility" category.
+more urgent) — never let wind alone establish an immediate threat. Population density and \
+nearby work history describe possible impact and context; neither proves that this tree is \
+dangerous. Use only visible evidence and supplied facts, and do not diagnose hidden structural \
+conditions.
 
 Respond only by calling the submit_triage tool. Never fabricate certainty you don't have.`;
 
@@ -79,24 +45,43 @@ const TOOL = {
   input_schema: {
     type: "object" as const,
     properties: {
-      category: { type: "string" as const, enum: CATEGORIES as unknown as string[] },
-      priority: { type: "string" as const, enum: PRIORITIES as unknown as string[] },
+      work_category: { type: "string" as const, enum: WORK_CATEGORIES as unknown as string[] },
+      immediate_threat: {
+        type: "boolean" as const,
+        description: "True only when visible or reported evidence supports an immediate threat right now.",
+      },
+      visible_hazard_signals: {
+        type: "array" as const,
+        items: { type: "string" as const },
+        maxItems: 5,
+      },
       reason: {
         type: "string" as const,
-        description: "One plain-language sentence an officer can read in under 3 seconds."
+        description: "One plain-language sentence an officer can read in under 3 seconds.",
       },
       confidence: { type: "number" as const, minimum: 0, maximum: 1 },
       missing_detail: {
         type: ["string", "null"] as any,
-        description: "Required (non-null) when category is 'other' and priority is 'low'; otherwise null."
+        description: "Required when the image does not show a tree hazard; otherwise null.",
       },
-      photo_shows_tree_hazard: { type: "boolean" as const }
+      photo_shows_tree_hazard: { type: "boolean" as const },
     },
-    required: ["category", "priority", "reason", "confidence", "missing_detail", "photo_shows_tree_hazard"]
-  }
+    required: [
+      "work_category",
+      "immediate_threat",
+      "visible_hazard_signals",
+      "reason",
+      "confidence",
+      "missing_detail",
+      "photo_shows_tree_hazard",
+    ],
+    additionalProperties: false,
+  },
 };
 
 function buildContextBlock(input: ScoringInput): string {
+  const currentOrders = input.nearbyRequests.filter((request) => request.is_current);
+  const pastOrders = input.nearbyRequests.filter((request) => !request.is_current);
   const lines = [
     `Description (may be non-English, translated already if so): ${input.description ?? "(none provided)"}`,
     `Description language: ${input.descriptionLanguage ?? "unknown"}`,
@@ -111,18 +96,77 @@ function buildContextBlock(input: ScoringInput): string {
     `Current wind: ${input.windContext ?? "unavailable"}`,
     `Emerald ash borer (EAB) regulated area: ${input.eabFlag ? "yes" : "no"}`,
     `Historical pattern at this location: ${input.historicalPatternNote ?? "no prior reports/work orders found nearby"}`,
-    `Resident pre-flagged this as urgent (blocking a road/sidewalk, or already fallen): ${input.preFlaggedUrgent}`
+    `Census population impact: ${
+      input.populationImpact
+        ? `${input.populationImpact.population} residents, ${input.populationImpact.population_density_per_km2}/km² (${input.populationImpact.density_percentile}th density percentile)`
+        : "no matching dissemination area"
+    }`,
+    `Cityworks tree orders within 50m: ${currentOrders.length} current, ${pastOrders.length} past`,
+    `Nearest Cityworks orders: ${
+      input.nearbyRequests
+        .slice(0, 5)
+        .map(
+          (request) =>
+            `${request.distance_m}m — ${request.work_category ?? "unknown work"} — ${request.status ?? "unknown status"}`,
+        )
+        .join("; ") || "none"
+    }`,
+    `Resident pre-flagged this as urgent (blocking a road/sidewalk, or already fallen): ${input.preFlaggedUrgent}`,
   ];
   return lines.join("\n");
 }
 
-export async function scoreReport(input: ScoringInput): Promise<ScoringOutput> {
+function parseScoringOutput(value: unknown): ScoringOutput {
+  if (!value || typeof value !== "object") throw new Error("tool output is not an object");
+  const result = value as Partial<ScoringOutput>;
+  if (!WORK_CATEGORIES.includes(result.work_category as WorkCategory)) {
+    throw new Error(`invalid work category: ${String(result.work_category)}`);
+  }
+  if (typeof result.immediate_threat !== "boolean") throw new Error("immediate_threat must be boolean");
+  if (
+    !Array.isArray(result.visible_hazard_signals) ||
+    result.visible_hazard_signals.length > 5 ||
+    !result.visible_hazard_signals.every((signal) => typeof signal === "string")
+  ) {
+    throw new Error("visible_hazard_signals must be an array of at most five strings");
+  }
+  if (result.immediate_threat && result.visible_hazard_signals.length === 0) {
+    throw new Error("immediate_threat requires at least one visible hazard signal");
+  }
+  if (typeof result.reason !== "string" || !result.reason.trim()) throw new Error("reason is required");
+  if (typeof result.confidence !== "number" || result.confidence < 0 || result.confidence > 1) {
+    throw new Error("confidence must be between 0 and 1");
+  }
+  if (result.missing_detail !== null && typeof result.missing_detail !== "string") {
+    throw new Error("missing_detail must be a string or null");
+  }
+  if (typeof result.photo_shows_tree_hazard !== "boolean") {
+    throw new Error("photo_shows_tree_hazard must be boolean");
+  }
+  if (!result.photo_shows_tree_hazard && !result.missing_detail?.trim()) {
+    throw new Error("missing_detail is required when the photo does not show a tree hazard");
+  }
+  if (!result.photo_shows_tree_hazard && result.immediate_threat) {
+    throw new Error("an unrelated photo cannot establish an immediate threat");
+  }
+  return result as ScoringOutput;
+}
+
+type ToolRequester = (input: ScoringInput, validationFailure?: string) => Promise<unknown>;
+
+async function requestFromClaude(input: ScoringInput, validationFailure?: string): Promise<unknown> {
   const content: Anthropic.MessageParam["content"] = [{ type: "text", text: buildContextBlock(input) }];
+  if (validationFailure) {
+    content.push({
+      type: "text",
+      text: `Your previous tool result was invalid: ${validationFailure}. Return a corrected submit_triage call.`,
+    });
+  }
 
   if (input.photoBase64 && input.photoMediaType) {
     content.unshift({
       type: "image",
-      source: { type: "base64", media_type: input.photoMediaType as any, data: input.photoBase64 }
+      source: { type: "base64", media_type: input.photoMediaType as any, data: input.photoBase64 },
     });
   }
 
@@ -132,18 +176,25 @@ export async function scoreReport(input: ScoringInput): Promise<ScoringOutput> {
     system: SYSTEM_PROMPT,
     tools: [TOOL],
     tool_choice: { type: "tool", name: "submit_triage" },
-    messages: [{ role: "user", content }]
+    messages: [{ role: "user", content }],
   });
 
   const toolUse = message.content.find((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
   if (!toolUse) throw new Error("Claude did not return a submit_triage tool call");
+  return toolUse.input;
+}
 
-  const result = toolUse.input as ScoringOutput;
-  if (!CATEGORIES.includes(result.category)) {
-    throw new Error(`Claude returned an invalid category: ${result.category}`);
+export async function scoreReport(
+  input: ScoringInput,
+  requester: ToolRequester = requestFromClaude,
+): Promise<ScoringOutput> {
+  try {
+    return parseScoringOutput(await requester(input));
+  } catch (firstError) {
+    try {
+      return parseScoringOutput(await requester(input, (firstError as Error).message));
+    } catch (secondError) {
+      throw new Error(`AI_UNAVAILABLE: ${(secondError as Error).message}`, { cause: secondError });
+    }
   }
-  if (!PRIORITIES.includes(result.priority)) {
-    throw new Error(`Claude returned an invalid priority: ${result.priority}`);
-  }
-  return result;
 }

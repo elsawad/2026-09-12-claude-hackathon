@@ -1,17 +1,24 @@
 import {
-  isInsideHRM,
   getLandStatus,
   getUtilityProximity,
+  isInsideHRM,
   resolveLandStatus,
-  type QuestionnaireLocationAnswer
+  type QuestionnaireLocationAnswer,
 } from "./geometry.js";
 import { getEabFlag } from "./eab.js";
 import { getWindContext } from "./wind.js";
-import { getHistoricalPatternNote } from "./cityworks.js";
-import { detectAndTranslate, respondInLanguage } from "./translate.js";
-import { scoreReport } from "./scoring.js";
-import { insertReport, findNearbyReport, insertAuditLog, type NewReportInput } from "./reportsRepo.js";
-import type { Report } from "./types.js";
+import { detectAndTranslate } from "./translate.js";
+import { categorizeReport, summarizeNearbyRequests } from "./categorization.js";
+import { findNearbyReport, insertAuditLog, insertReport } from "./reportsRepo.js";
+import type {
+  CategorizationAccepted,
+  Category,
+  LandEvidence,
+  LandStatus,
+  Priority,
+  Report,
+  WorkCategory,
+} from "./types.js";
 
 export interface SubmitReportInput {
   photoUrl: string | null;
@@ -28,53 +35,75 @@ export interface SubmitReportInput {
 
 export type SubmitReportResult =
   | { kind: "outside_hrm" }
+  | { kind: "not_hrm_owned"; landCheck: LandEvidence }
+  | { kind: "categorization_error"; code: "INVALID_INPUT" | "AI_UNAVAILABLE"; message: string }
   | { kind: "rejected_spam"; reason: string }
-  | { kind: "diverted_private"; message: string; report: Report }
-  | { kind: "created"; report: Report; possibleDuplicate: { referenceCode: string; distanceApprox: string } | null };
+  | {
+      kind: "created";
+      report: Report;
+      categorization: CategorizationAccepted;
+      possibleDuplicate: { referenceCode: string; distanceApprox: string } | null;
+    };
 
-const PRIVATE_PROPERTY_MESSAGE =
-  "HRM handles municipal trees and right-of-way blockages. Trees and debris on private " +
-  "property are the homeowner's (or their insurer's) responsibility. If a tree on your own " +
-  "property is dangerous, a licensed arborist can assess and remove it — HRM's 311 line can " +
-  "point you to general guidance, but this specific report won't enter the city's work queue.";
-
-/**
- * No HRM open-data layer gives us a district number or a human "near X"
- * label (see PRD 5.1 — nothing named "HRM Districts" is in scope), so the
- * best free approximation is the street/park name the geometry check
- * already resolved. District is left "unknown" rather than fabricated —
- * the console already renders that as "Area unknown".
- */
 function blockLocationFrom(detail: string | null, lat: number, lng: number): string {
   return detail ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 }
 
-export async function submitReport(input: SubmitReportInput): Promise<SubmitReportResult> {
-  // Step 1: geofence
-  if (!(await isInsideHRM(input.lat, input.lng))) {
-    return { kind: "outside_hrm" };
-  }
+function legacyCategory(category: WorkCategory): Category {
+  if (category === "pruning_trimming") return "pruning";
+  if (category === "stump_removal") return "stump";
+  if (category === "chipping_brush_removal") return "blockage";
+  if (category === "tree_assessment") return "disease";
+  return "other";
+}
 
-  // Step 2 + human questionnaire reconciliation
+export async function submitReport(input: SubmitReportInput): Promise<SubmitReportResult> {
+  if (!(await isInsideHRM(input.lat, input.lng))) return { kind: "outside_hrm" };
+
   const geometryLandStatus = await getLandStatus(input.lat, input.lng);
   const resolved = resolveLandStatus(geometryLandStatus, input.questionnaireLocationAnswer);
   const blockLocation = blockLocationFrom(geometryLandStatus.detail, input.lat, input.lng);
-
-  // Step 3
   const utilityProximity = await getUtilityProximity(input.lat, input.lng);
-
-  // Step 4 (informational only — never blocks submission)
   const nearbyDuplicate = await findNearbyReport(input.lat, input.lng, 50);
-
-  // Step 5
-  const historicalPatternNote = await getHistoricalPatternNote(input.lat, input.lng);
-
-  // Step 6
   const windContext = await getWindContext(input.lat, input.lng);
-
   const eabFlag = await getEabFlag(input.lat, input.lng);
 
-  // Translation — original is always preserved; translatedToEnglish feeds Claude + officer view.
+  const categorization = await categorizeReport({
+    lat: input.lat,
+    lng: input.lng,
+    description: input.descriptionOriginal,
+    descriptionLanguage: null,
+    questionnaireLocationAnswer: input.questionnaireLocationAnswer,
+    questionnaireDangerAnswer: input.questionnaireDangerAnswer,
+    landStatus: resolved.status,
+    utilityProximityM: utilityProximity?.distanceM ?? null,
+    utilityFeatureType: utilityProximity?.featureType ?? null,
+    windContext,
+    eabFlag,
+    historicalPatternNote: null,
+    preFlaggedUrgent: input.preFlaggedUrgent,
+    photoBase64: input.photoBase64,
+    photoMediaType: input.photoMediaType,
+  });
+
+  if (categorization.status === "rejected") {
+    return { kind: "not_hrm_owned", landCheck: categorization.land_check };
+  }
+  if (categorization.status === "error") {
+    return {
+      kind: "categorization_error",
+      code: categorization.error,
+      message: categorization.message,
+    };
+  }
+  if (!categorization.photo_shows_tree_hazard) {
+    return {
+      kind: "rejected_spam",
+      reason:
+        "The photo doesn't appear to show a tree or vegetation hazard. Please retake the photo showing the tree or branch in question.",
+    };
+  }
+
   let descriptionLanguage: string | null = null;
   let descriptionTranslated: string | null = null;
   let translationIsAi = false;
@@ -89,82 +118,19 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
     }
   }
 
-  if (resolved.divertPrivate) {
-    const baseInput: NewReportInput = {
-      photoUrl: input.photoUrl,
-      lat: input.lat,
-      lng: input.lng,
-      locationSource: input.locationSource,
-      blockLocation,
-      district: "unknown",
-      descriptionOriginal: input.descriptionOriginal,
-      descriptionLanguage,
-      descriptionTranslated,
-      translationIsAi,
-      questionnaireLocationAnswer: input.questionnaireLocationAnswer,
-      questionnaireDangerAnswer: input.questionnaireDangerAnswer,
-      landStatus: resolved.status,
-      landStatusSource: resolved.source,
-      category: "other",
-      priority: "low",
-      reason: "Private property, both geometry and resident agree — not a city work item.",
-      confidence: null,
-      missingDetail: null,
-      utilityProximityM: utilityProximity?.distanceM ?? null,
-      utilityFeatureType: utilityProximity?.featureType ?? null,
-      windContext,
-      eabFlag,
-      historicalPatternNote,
-      status: "diverted_private"
-    };
-    const report = await insertReport(baseInput);
-    await insertAuditLog({
-      report_id: report.id,
-      actor: "model",
-      action: "diverted_private",
-      before: null,
-      after: { land_status: "private", land_status_source: "both_agree", note: "diverted before entering work queue" }
-    });
-    const message =
-      descriptionLanguage && descriptionLanguage.toLowerCase() !== "english"
-        ? await respondInLanguage(PRIVATE_PROPERTY_MESSAGE, descriptionLanguage)
-        : PRIVATE_PROPERTY_MESSAGE;
-    return { kind: "diverted_private", message, report };
-  }
-
-  // Step 7: Claude scoring (rides the spam/content check for any attached photo)
-  const scoring = await scoreReport({
-    description: descriptionTranslated ?? input.descriptionOriginal,
-    descriptionLanguage,
-    questionnaireLocationAnswer: input.questionnaireLocationAnswer,
-    questionnaireDangerAnswer: input.questionnaireDangerAnswer,
-    landStatus: resolved.status,
-    utilityProximityM: utilityProximity?.distanceM ?? null,
-    utilityFeatureType: utilityProximity?.featureType ?? null,
-    windContext,
-    eabFlag,
-    historicalPatternNote,
-    preFlaggedUrgent: input.preFlaggedUrgent,
-    photoBase64: input.photoBase64,
-    photoMediaType: input.photoMediaType
-  });
-
-  if (input.photoBase64 && !scoring.photo_shows_tree_hazard) {
-    return {
-      kind: "rejected_spam",
-      reason: "The photo doesn't appear to show a tree or vegetation hazard. Please retake the photo showing the tree or branch in question."
-    };
-  }
-
-  // Utility proximity is a hard, measured signal — it overrides the model's
-  // own category/priority judgement the same way Track A's tier override
-  // did, rather than just being one more thing Claude weighs.
   const utilityIsEmergency = utilityProximity?.isEmergency ?? false;
-  const category = utilityIsEmergency ? "utility" : scoring.category;
-  const priority = utilityIsEmergency ? "high" : scoring.priority;
+  const category: Category = utilityIsEmergency ? "utility" : legacyCategory(categorization.work_category);
+  const priority: Priority = utilityIsEmergency || categorization.priority === 1 ? "high" : "low";
+  const proposedTier = utilityIsEmergency ? "utility_emergency" : categorization.tier;
   const reason = utilityIsEmergency
     ? `Within ${Math.round(utilityProximity!.distanceM)}m of a ${utilityProximity!.featureType} — routed as a utility emergency regardless of the model's tree-only assessment.`
-    : scoring.reason;
+    : categorization.reason;
+  const localLandStatus: LandStatus =
+    categorization.land_check.asset_code === "ROW" ||
+    categorization.land_check.location_type?.startsWith("ROW")
+      ? "right_of_way"
+      : "public_park";
+  const historicalPatternNote = summarizeNearbyRequests(categorization.nearby_requests);
 
   const report = await insertReport({
     photoUrl: input.photoUrl,
@@ -179,19 +145,20 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
     translationIsAi,
     questionnaireLocationAnswer: input.questionnaireLocationAnswer,
     questionnaireDangerAnswer: input.questionnaireDangerAnswer,
-    landStatus: resolved.status,
-    landStatusSource: resolved.source,
+    landStatus: localLandStatus,
+    landStatusSource: "geometry",
     category,
     priority,
+    proposedTier,
     reason,
-    confidence: scoring.confidence,
-    missingDetail: scoring.missing_detail,
+    confidence: categorization.confidence,
+    missingDetail: categorization.missing_detail,
     utilityProximityM: utilityProximity?.distanceM ?? null,
     utilityFeatureType: utilityProximity?.featureType ?? null,
     windContext,
     eabFlag,
     historicalPatternNote,
-    status: "new"
+    status: "new",
   });
 
   await insertAuditLog({
@@ -199,14 +166,15 @@ export async function submitReport(input: SubmitReportInput): Promise<SubmitRepo
     actor: "model",
     action: "scored",
     before: null,
-    after: { ...scoring, category, priority, proposed_tier: report.proposed_tier, utility_override: utilityIsEmergency }
+    after: { ...categorization, final_tier: proposedTier, utility_override: utilityIsEmergency },
   });
 
   return {
     kind: "created",
     report,
+    categorization,
     possibleDuplicate: nearbyDuplicate
       ? { referenceCode: nearbyDuplicate.reference_code, distanceApprox: "within 50m" }
-      : null
+      : null,
   };
 }

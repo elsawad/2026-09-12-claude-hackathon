@@ -9,6 +9,7 @@
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "check": "tsx src/review.check.ts",
+    "check:triage": "tsx src/categorization.self-check.ts",
     "seed": "tsx src/seed.ts",
     "score-backlog": "tsx src/scripts/scoreBacklog.ts"
   },
@@ -17,6 +18,7 @@
     "@electric-sql/pglite": "^0.2.15",
     "@turf/turf": "^7.1.0",
     "@vercel/blob": "^0.27.0",
+    "better-sqlite3": "^11.7.0",
     "cors": "^2.8.6",
     "dotenv": "^16.4.5",
     "express": "^5.2.1",
@@ -24,6 +26,7 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/geojson": "^7946.0.14",
