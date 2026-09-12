@@ -15,7 +15,14 @@ app.get("/api", (_req, res) => {
   res.json({
     name: "Canopy Watch API",
     version: "0.1.0",
-    endpoints: ["/api/health"],
+    endpoints: [
+      "/api/health",
+      "/api/stats",
+      "/api/points",
+      "/api/search",
+      "/api/work-order/:id",
+      "/api/check",
+    ],
   });
 });
 

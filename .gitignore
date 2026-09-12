@@ -9,3 +9,6 @@ build/
 coverage/
 .vite/
 *.tsbuildinfo
+.venv/
+__pycache__/
+*.pyc
