@@ -134,21 +134,30 @@ app.post("/api/reports", upload.single("photo"), async (req, res) => {
           error: "This location doesn't appear to be inside Halifax Regional Municipality. Canopy Watch only covers HRM."
         });
         return;
-      case "rejected_spam":
-        res.status(422).json({ error: result.reason });
+      case "not_hrm_owned":
+        res.status(422).json({
+          status: "rejected",
+          rejection_reason: "NOT_HRM_OWNED",
+          land_check: result.landCheck,
+          error: "This location is not on HRM-owned land."
+        });
         return;
-      case "diverted_private":
-        res.json({
-          kind: "diverted_private",
-          referenceCode: result.report.reference_code,
+      case "categorization_error":
+        res.status(result.code === "AI_UNAVAILABLE" ? 503 : 400).json({
+          status: "error",
+          error: result.code,
           message: result.message
         });
+        return;
+      case "rejected_spam":
+        res.status(422).json({ error: result.reason });
         return;
       case "created":
         res.json({
           kind: "created",
           referenceCode: result.report.reference_code,
           tier: result.report.proposed_tier,
+          categorization: result.categorization,
           possibleDuplicate: result.possibleDuplicate
         });
         return;
