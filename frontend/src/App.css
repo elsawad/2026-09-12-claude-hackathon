@@ -148,7 +148,7 @@
   margin-bottom: 1.25rem;
 }
 
-.home button,
+.actions button,
 .home .button {
   appearance: none;
   display: inline-block;
@@ -162,12 +162,12 @@
   text-decoration: none;
 }
 
-.home button:disabled {
+.actions button:disabled {
   cursor: not-allowed;
   opacity: 0.85;
 }
 
-.home button.secondary,
+.actions button.secondary,
 .home .button.secondary {
   background: transparent;
   border-color: var(--border);
